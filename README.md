@@ -1,17 +1,19 @@
 # Genetic Algorithm Base Class (GAB-Class)
 This project provides a starting point for quickly implementing and testing new genetic algorithms (GAs) in C++. It minimizes the time spent working on crossovers and mutations so that GA programmers can spend most of their time on the fitness function.
-Note: This is a hobby project that began 12/3/17 (right before my finals!) and is a work in progress.
 
-## Table of Contents
-* What is a Genetic Algorithm?
-* GAB-Class Implementation
-* Usage
-* Crossover Notes
-* Mutation Notes
-* Planned Features
-* References
+**_Note:_** This is a hobby project that began 12/3/17 (right before my finals!) and is still a work in progress.
 
-## What is a Genetic Algorithm?
+# Table of Contents
+* [What is a Genetic Algorithm?](#whatIsGA)
+* [GAB-Class Implementation](#gabClass)
+* [Quick Start!](#quickStart)
+* [Crossover Notes](#crossovers)
+* [Mutation Notes](#mutations)
+* [Planned Features](#plannedFeatures)
+* [References](#references)
+
+<a name = "whatIsGA"/>
+# What is a Genetic Algorithm?
 Genetic algorithms are optimization algorithms that use the principles of evolution and natural selection to solve problems. GAs are useful for problems with the following properties:
 * Large or infinite number of possible solutions
 * Possible to mathematically evaluate potential solutions
@@ -22,12 +24,13 @@ GAs have the following phases:
 2. Crossover Phase – lower scored solutions are replaced with combinations of higher scored solutions
 3. Mutation Phase – solutions are randomly changed
 
-## GAB-Class Implementation
+<a name = "gabClass"/>
+# GAB-Class Implementation
 
-###### Workflow:
-Classes:
+## Workflow:
 
 GAB-Class is the combination of several classes:
+
 * GeneticAlgorithm class:
   * Manages vector of chromosomes
   * Runs all GA phases, calling appropriate Chromo methods
@@ -40,16 +43,27 @@ GAB-Class is the combination of several classes:
   * Contains fitness function
   * Contains custom mutations
   * Overrides functions to handle serialization
+		* GAB-Class includes a ChromoDefault class which can be used as a template for this
 * ChromoSerialization.h and GeneticAlgorithmTechniques.h:
   * Static helper functions and enums
 
-###### Serialization:
+## Serialization:
 The biggest problem I encountered in this project was that the bulk of the work was still being done in the derived classes. Ideally, users should spend their time on the fitness function and let GAB-Class handle the crossover and mutation phases.
+
 GAB-Class needed some way to modify arbitrary data contained in the derived classes. I decided to “serialize” the data into long string variables.
+
 The crossover and mutation phases are handled by GAB-Class and performed on the serialized strings. Afterwards, they are deserialized back into data that the fitness function can work with.
 
-## Quick Start
-###### Step 1: Set up project
+## "Safe" vs "Unsafe":
+In the code and this documentation, I use the terms "safe" and "unsafe."
+
+Each generation, GAB-Class counts up the number of Chromos which are not intended to be crossed over (based on user settings). The highest-scoring Chromos should not be replaced. They are referred to as "safe." The rest of the Chromos are called "unsafe", and will be overwritten during the crossover phase.
+
+However, sometimes there are many Chromos with invalid scores, including "safe" Chromos. To fix this, GAB-Class iterates through "safe" Chromos in reverse, marking invalid ones as "unsafe". Those Chromos will be copied from "safe" Chromos.
+
+<a name = "quickStart"/>
+# Quick Start
+## Step 1: Set up project
 Come up with an amazing name for your Chromo class. This is where you will implement your fitness function.
 
 Download all the headers and include them:
@@ -60,7 +74,7 @@ Download all the headers and include them:
 #include "AmazingChromoName.h" // <-- Change this to whichever amazing name you chose 
 ```
 
-###### Step 2: Basic variable setup
+## Step 2: Basic variable setup
 Copy-paste the code from ChromoDefault.cpp and ChromoDefault.h into AmazingChromoName.cpp and AmazingChromoName.h.
 
 Create variables to hold your solution data:
@@ -150,7 +164,7 @@ Chromo::addItemIndicesOfVector(~~t_indices, t_mutationLimits, location~~, sizeof
 
 
 
-###### Step 3: Fill in optional methods
+## Step 3: Fill in optional methods
 
 You may have noticed that in getSerialItemIndices(), the floats were not set to be included in the crossover and mutation phases. This is because while floats and doubles can be mutated, it's easier to get useful mutations by altering them manually.
 
@@ -208,54 +222,75 @@ void ChromoTestFeatures::readDataFromCSV(std::vector<std::string>& chromoValues)
 }
 ```
 
-###### Step 4: Add your fitness function and start testing!!!
 
-## Crossover Notes
+
+## Step 4: Add your fitness function and start testing!!!
+
+
+
+<a name = "crossovers"/>
+# Crossover Notes
 There are 3 types of crossovers included. Users can set the number of times each is used per generation.
-•	Copy
-o	The GA selects a random safe Chromo and copies its values into the 
-•	Shuffle
-o	The GA selects 2 safe Chromos to use as sources
-o	Each byte is randomly chosen from one of the sources
-o	The bytes are kept in the same order
-•	n-Split Crossover
-o	The GA selects 2 safe Chromos to use as sources
-o	The serialized strings are split into n partitions
-o	Each partition is filled with data from a source string, in alternating fashion
 
-## Mutation Notes
+The basic idea is that each "unsafe" Chromo is replaced, using 1-2 "safe" Chromos as sources. "Unsafe" Chromos use the following crossover procedures:
+
+*	Copy
+  *	The GA selects a random safe Chromo and copies its values
+		
+*	Shuffle
+  *	The GA selects 2 safe Chromos to use as sources
+  *	Each byte is randomly chosen from one of the sources
+  *	The bytes are kept in the same order
+
+*	n-Split Crossover
+  *	The GA selects 2 safe Chromos to use as sources
+  *	The serialized strings are split into n partitions
+  *	Each partition is filled with data from a source string, in alternating fashion
+
+
+
+<a name = "mutations"/>
+# Mutation Notes
 The way mutations occur has a huge impact on the number of generations you need to run in order to get results. There are several settings to help with this.
 
-###### MutationCountMax:
+## MutationCountMax:
 Each time a Chromo is selected for mutation, the number of mutations is randomly set in the range [1, MutationCountMax]. Use this setting to increase/decrease the variability of data.
 
-###### MutationBitWidth:
+## MutationBitWidth:
 Every time a mutation occurs, it is done over a range of bits. If you want to mutate an entire byte, set this to 8.
 
-###### MutationChanceIn100:
+## MutationChanceIn100:
 For each bit in a mutation range, this is the chance that the bit is toggled.
 
-###### MutationSelection:
+## MutationSelection:
 This is an enum setting that gives you control over how mutation ranges are selected.
-•	pureRandom:
-o	A random bit from a random byte will be chosen as the starting point for the mutation block 
-•	randomByte:
-o	Same as above, but the mutation block will always start on a new byte
-•	entirePartition:
-o	Each partition within the serialized data will be mutated on its own
-o	This is useful for when you want one number to mutate at a time
-My personal suggestion is to use entirePartition. If you want multiple values to be mutated at once, increase the MutationCountMax setting.
-This lets mutations be more randomly distributed, rather than certain values changing at the same time just because they were closer together in the serialized string.
+*	pureRandom:
+  *	A random bit from a random byte will be chosen as the starting point for the mutation block 
+*	randomByte:
+  *	Same as above, but the mutation block will always start on a new byte
+*	entirePartition:
+  *	Each partition within the serialized data will be mutated on its own
+  *	This is useful for when you want one number to mutate at a time
 
-###### Custom Mutations:
+My personal suggestion is to use **entirePartition**. If you want multiple values to be mutated at once, increase the **MutationCountMax** setting. This lets mutations be more randomly distributed, rather than certain values changing at the same time just because they were closer together in the serialized string.
+
+## Custom Mutations:
 This feature is intended for data that you want more control over, as well as data that is hard to mutate randomly (floats and doubles).
+
 The most common use is altering variables by a random range. GAB-Class includes this data in the crossover phase and file I/O, but does not perform mutations on it.
 
-## Planned Features
 
-•	Allow vectors of different sizes
-•	Utility functions for 2D and 3D arrays
-•	
 
+<a name = "plannedFeatures"/>
+# Planned Features
+
+*	Allow vectors of different sizes
+*	Utility functions for 2D and 3D arrays
+* Variability for partitions so users can make certain data more/less likely to mutate
+* Currently, scores are invalid if they are 0.0 or below. Scores should be changed to a struct containing an *isInvalid* bool
+
+
+
+<a name = "references"/>
 ## References
-Knuth Algorithm – used to generate random unique numbers
+* Knuth Algorithm – used to generate random unique numbers
