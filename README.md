@@ -13,7 +13,9 @@ This project provides a starting point for quickly implementing and testing new 
 * [References](#references)
 
 <a name = "whatIsGA"/>
+
 # What is a Genetic Algorithm?
+
 Genetic algorithms are optimization algorithms that use the principles of evolution and natural selection to solve problems. GAs are useful for problems with the following properties:
 * Large or infinite number of possible solutions
 * Possible to mathematically evaluate potential solutions
@@ -25,6 +27,7 @@ GAs have the following phases:
 3. Mutation Phase – solutions are randomly changed
 
 <a name = "gabClass"/>
+
 # GAB-Class Implementation
 
 ## Workflow:
@@ -62,7 +65,9 @@ Each generation, GAB-Class counts up the number of Chromos which are not intende
 However, sometimes there are many Chromos with invalid scores, including "safe" Chromos. To fix this, GAB-Class iterates through "safe" Chromos in reverse, marking invalid ones as "unsafe". Those Chromos will be copied from "safe" Chromos.
 
 <a name = "quickStart"/>
+
 # Quick Start
+
 ## Step 1: Set up project
 Come up with an amazing name for your Chromo class. This is where you will implement your fitness function.
 
@@ -229,7 +234,9 @@ void ChromoTestFeatures::readDataFromCSV(std::vector<std::string>& chromoValues)
 
 
 <a name = "crossovers"/>
+
 # Crossover Notes
+
 There are 3 types of crossovers included. Users can set the number of times each is used per generation.
 
 The basic idea is that each "unsafe" Chromo is replaced, using 1-2 "safe" Chromos as sources. "Unsafe" Chromos use the following crossover procedures:
@@ -250,19 +257,21 @@ The basic idea is that each "unsafe" Chromo is replaced, using 1-2 "safe" Chromo
 
 
 <a name = "mutations"/>
+
 # Mutation Notes
+
 The way mutations occur has a huge impact on the number of generations you need to run in order to get results. There are several settings to help with this.
 
-## MutationCountMax:
+###### MutationCountMax:
 Each time a Chromo is selected for mutation, the number of mutations is randomly set in the range [1, MutationCountMax]. Use this setting to increase/decrease the variability of data.
 
-## MutationBitWidth:
+###### MutationBitWidth:
 Every time a mutation occurs, it is done over a range of bits. If you want to mutate an entire byte, set this to 8.
 
-## MutationChanceIn100:
+###### MutationChanceIn100:
 For each bit in a mutation range, this is the chance that the bit is toggled.
 
-## MutationSelection:
+###### MutationSelection:
 This is an enum setting that gives you control over how mutation ranges are selected.
 *	pureRandom:
   *	A random bit from a random byte will be chosen as the starting point for the mutation block 
@@ -282,15 +291,18 @@ The most common use is altering variables by a random range. GAB-Class includes 
 
 
 <a name = "plannedFeatures"/>
+
 # Planned Features
 
-*	Allow vectors of different sizes
-*	Utility functions for 2D and 3D arrays
+* Allow vectors of different sizes
+* Utility functions for 2D and 3D arrays
 * Variability for partitions so users can make certain data more/less likely to mutate
 * Currently, scores are invalid if they are 0.0 or below. Scores should be changed to a struct containing an *isInvalid* bool
 
 
 
 <a name = "references"/>
+
 ## References
+
 * Knuth Algorithm – used to generate random unique numbers
