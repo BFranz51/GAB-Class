@@ -42,12 +42,12 @@ namespace ga
 		void shuffleFromParents(const C&, const C&);
 		template <typename C>
 		void crossoverFromParents(const C&, const C&, const size_t);
-		void mutate(std::vector<SerialPartition>&, const MutationLimits, const MutationSelection, const size_t, const size_t, const short int);
+		void mutate(std::vector<EncodedPartition>&, const MutationLimits, const MutationSelection, const size_t, const size_t, const short int);
 		virtual void mutateCustom() = 0;
 
 		// Pure virtual functions, required to be overridden by derived classes
-		virtual void serialize() = 0;
-		virtual void deserialize() = 0;
+		virtual void encode() = 0;
+		virtual void decode() = 0;
 
 		// Don't require limits to be applied
 		void applyLimits() {};
@@ -62,15 +62,15 @@ namespace ga
 			return output;
 		}
 
-		static void addItemIndicesOfVector(std::vector<SerialPartition>&, MutationLimits&, size_t&, const size_t, const size_t, const std::string, const bool);
-		static void addItemIndicesOfBoolVector(std::vector<SerialPartition>&, MutationLimits&, size_t&, const size_t, const std::string, const bool);
+		static void addItemIndicesOfVector(std::vector<EncodedPartition>&, MutationLimits&, size_t&, const size_t, const size_t, const std::string, const bool);
+		static void addItemIndicesOfBoolVector(std::vector<EncodedPartition>&, MutationLimits&, size_t&, const size_t, const std::string, const bool);
 
 	protected:
 		void setScore(double);
 		virtual void writeDataToCSV(std::ostream&) = 0;
 		virtual void readDataFromCSV(std::vector<std::string>&) = 0;
 
-		std::string m_serialized;
+		std::string m_encoded;
 		int(*m_randomGenerator)(void);
 
 	private:
@@ -80,7 +80,7 @@ namespace ga
 	// Implement templated functions here, rather than in the cpp file
 
 	/**
-	*	@brief  Copies the serialized data from another chromo.
+	*	@brief  Copies the encoded data from another chromo.
 	*
 	*	@param  t_parent specifies the Chromo to copy from
 	*	@return void
@@ -88,11 +88,11 @@ namespace ga
 	template <typename C>
 	void Chromo::copyParent(const C& t_parent)
 	{
-		m_serialized = t_parent.m_serialized;
+		m_encoded = t_parent.m_encoded;
 	}
 
 	/**
-	*	@brief  Copies the serialized data from two sources, randomly choosing each byte from the sources.
+	*	@brief  Copies the encoded data from two sources, randomly choosing each byte from the sources.
 	*
 	*	@param  t_parent1 specifies the first parent to copy from
 	*	@param  t_parent2 specifies the second parent to copy from
@@ -101,12 +101,12 @@ namespace ga
 	template <typename C>
 	void Chromo::shuffleFromParents(const C& t_parent1, const C& t_parent2)
 	{
-		m_serialized = shuffleSerialized(t_parent1.m_serialized, t_parent2.m_serialized, m_randomGenerator);
+		m_encoded = shuffleEncodedData(t_parent1.m_encoded, t_parent2.m_encoded, m_randomGenerator);
 	}
 
 	/**
-	*	@brief  Copies the serialized data from two sources using the n-Split method.
-	*	This is done by dividing up the serialized string into (N + 1) partitions
+	*	@brief  Copies the encoded data from two sources using the n-Split method.
+	*	This is done by dividing up the encoded string into (N + 1) partitions
 	*	of random size, and selecting a different source parent for each partition.
 	*
 	*	@param  t_parent1 specifies the first parent to copy from
@@ -117,7 +117,7 @@ namespace ga
 	template <typename C>
 	void Chromo::crossoverFromParents(const C& t_parent1, const C& t_parent2, const size_t t_numSplits)
 	{
-		m_serialized = nSplitSerialized(t_parent1.m_serialized, t_parent2.m_serialized, t_numSplits, m_randomGenerator);
+		m_encoded = nSplitEncodedData(t_parent1.m_encoded, t_parent2.m_encoded, t_numSplits, m_randomGenerator);
 	}
 
 } // namespace ga

@@ -44,12 +44,12 @@ namespace ga
 		// Data processing that enables
 		// crossover and mutation phases,
 		// as well as file I/O
-		void serialize();
-		void deserialize();
+		void encode();
+		void decode();
 		void applyLimits();
 
 		// Extra info to be used during crossovers and mutations
-		static void getSerialItemIndices(std::vector<SerialPartition>&, MutationLimits&);
+		static void getEncodedPartitions(std::vector<EncodedPartition>&, MutationLimits&);
 
 		// Custom output
 		friend std::ostream& operator<<(std::ostream&, const ChromoDefault&);

@@ -45,7 +45,7 @@ namespace ga
 			for (size_t i = 0; i < t_generationSize; i++) {
 				m_chromo.push_back(new C(t_initialStateId, m_randomGenerator));
 			}
-			C::getSerialItemIndices(m_serialItemIndices, m_mutationLimits);
+			C::getEncodedPartitions(m_encodedPartitions, m_mutationLimits);
 		};
 
 		~GeneticAlgorithm()
@@ -64,8 +64,8 @@ namespace ga
 
 		// Translate Chromo data to and from strings
 		// These are public to help with testing
-		void serializeChromos();
-		void deserializeChromos();
+		void encodeChromos();
+		void decodeChromos();
 		
 		// Algorithm settings
 		void setMutationSelection(const MutationSelection);
@@ -133,7 +133,7 @@ namespace ga
 		size_t m_numEvolveShuffle{ 0 };
 		size_t m_numEvolveCrossover{ 0 };
 		
-		// In a crossover, split the serialized data
+		// In a crossover, split the encoded data
 		// this many times
 		size_t m_numCrossoverSplits{ 1 };
 
@@ -186,10 +186,10 @@ namespace ga
 		size_t pickRandomSafeChromo();
 		void pickTwoRandomSafeChromos(size_t&, size_t&);
 
-		// Information about serialized string partitions
-		std::vector<SerialPartition> m_serialItemIndices;
-		// The extent to which we are allowed to mutate serialized strings
-		// This allows data to be serialized while only being mutated by
+		// Information about encoded string partitions
+		std::vector<EncodedPartition> m_encodedPartitions;
+		// The extent to which we are allowed to mutate encoded strings
+		// This allows data to be encoded while only being mutated by
 		// customMutations() method
 		MutationLimits m_mutationLimits;
 
@@ -247,8 +247,8 @@ namespace ga
 	
 	/**
 	*	@brief  Outputs GA settings and Chromo data to specified file.
-	*	The Chromo data written is the serialized string data, not the actual
-	*	variables. Therefore, the Chromo's serialize() function must be
+	*	The Chromo data written is the encoded string data, not the actual
+	*	variables. Therefore, the Chromo's encode() function must be
 	*	called before this function is called.
 	*	
 	*	@param  t_filename specifies the path and filename of the output file
@@ -291,9 +291,9 @@ namespace ga
 	}
 
 	/**
-	*	@brief  Opens file and reads GA settings and Chromo data. Then deserializes Chromo data.
-	*	Since the Chromo data in the file has been serialized to string format,
-	*	this method deserializes it.
+	*	@brief  Opens file and reads GA settings and Chromo data. Then decodes Chromo data.
+	*	Since the Chromo data in the file has been encoded to string format,
+	*	this method decodes it.
 	*
 	*	@param  t_filename specifies the path and filename of the file to read from
 	*	@return void
@@ -364,13 +364,13 @@ namespace ga
 			// Read each Chromo
 			for (auto it{ std::begin(m_chromo) }; it != std::end(m_chromo); ++it)
 			{
-				// Read serialized data
+				// Read encoded data
 				(*it)->readFromFileAsBinary(iStream);
 				// Translate to variables and limit
-				(*it)->deserialize();
+				(*it)->decode();
 				(*it)->applyLimits();
-				// Serialize again, in case limits were applied
-				(*it)->serialize();
+				// Encode again, in case limits were applied
+				(*it)->encode();
 			}
 
 			iStream.close();
@@ -381,7 +381,7 @@ namespace ga
 
 	/**
 	*	@brief  Outputs GA settings and Chromo data to specified CSV file.
-	*	As the actual Chromo variables are written, rather than the serialized strings,
+	*	As the actual Chromo variables are written, rather than the encoded strings,
 	*	the inherited Chromo method writeToFileAsCSV() is called.
 	*
 	*	@param  t_filename specifies the path and filename of the output file
@@ -413,15 +413,15 @@ namespace ga
 
 			// Write header for chromos
 			oStream << "ChromoID,Score";
-			for (size_t i{ 0 }; i < m_serialItemIndices.size(); ++i) {
-				if (m_serialItemIndices.at(i).type == SerialPartitionType::eachBitUnique) {
+			for (size_t i{ 0 }; i < m_encodedPartitions.size(); ++i) {
+				if (m_encodedPartitions.at(i).type == EncodedPartitionType::eachBitUnique) {
 					// Boolean vectors require columns for each bit
-					for (size_t bit{ 0 }; bit < m_serialItemIndices.at(i).uniqueBits; ++bit) {
-						oStream << "," << m_serialItemIndices.at(i).name << bit;
+					for (size_t bit{ 0 }; bit < m_encodedPartitions.at(i).uniqueBits; ++bit) {
+						oStream << "," << m_encodedPartitions.at(i).name << bit;
 					}
 				}
 				else {
-					oStream << "," << m_serialItemIndices.at(i).name;
+					oStream << "," << m_encodedPartitions.at(i).name;
 				}
 			}
 			oStream << "\n";
@@ -441,7 +441,7 @@ namespace ga
 
 	/**
 	*	@brief  Opens file and reads GA settings and Chromo data.
-	*	As the actual Chromo variables are written, rather than the serialized strings,
+	*	As the actual Chromo variables are read, rather than the encoded strings,
 	*	the inherited Chromo method readFromFileAsCSV() is called.
 	*
 	*	@param  t_filename specifies the path and filename of the file to read from
@@ -495,8 +495,8 @@ namespace ga
 				// Read variables directly and limit
 				(*it)->readFromFileAsCSV(iStream);
 				(*it)->applyLimits();
-				// Update serialized strings
-				(*it)->serialize();
+				// Update encoded strings
+				(*it)->encode();
 			}
 
 			iStream.close();
@@ -554,7 +554,7 @@ namespace ga
 	}
 
 	/**
-	*	@brief  Serializes Chromo data and calls all crossover methods.
+	*	@brief  Encodes Chromo data and calls all crossover methods.
 	*	Crossover methods are run on individual Chromos marked as "unsafe"
 	*	due to having either invalid or low fitness scores
 	*	Methods used:
@@ -568,8 +568,8 @@ namespace ga
 	template <typename C>
 	void GeneticAlgorithm<C>::runCrossoverPhase(const bool showDebugMessages)
 	{
-		// Convert from variables to serialized strings
-		serializeChromos();
+		// Convert from variables to encoded strings
+		encodeChromos();
 
 		// Crossover phase
 		doCopies();
@@ -578,11 +578,11 @@ namespace ga
 	}
 
 	/**
-	*	@brief  Mutates serialized data and calls any custom mutations.
-	*	@note   The data should have already been serialized in the crossover
+	*	@brief  Mutates encoded data and calls any custom mutations.
+	*	@note   The data should have already been encoded in the crossover
 	*	phase.
 	*
-	*	Calls doMutations() to mutate the serialize data, then deserializes
+	*	Calls doMutations() to mutate the encoded data, then decodes
 	*	all Chromos. If applicable, runs custom mutations which are performed
 	*	by the inherited Chromo class.
 	*
@@ -592,16 +592,16 @@ namespace ga
 	void GeneticAlgorithm<C>::runMutationPhase(const bool showDebugMessages)
 	{
 		// Mutation phase (part 1)
-		// Mutate the serialized data
+		// Mutate the encoded data
 		doMutations();
 		if (showDebugMessages) {
 			std::cout << "doMutation() complete...\n";
 		}
 		
-		// Convert from serialized strings back to variables
-		deserializeChromos();
+		// Convert from encoded strings back to variables
+		decodeChromos();
 		if (showDebugMessages) {
-			std::cout << "deserializeChromos() complete...\n";
+			std::cout << "decodeChromos() complete...\n";
 		}
 		
 		if (C::hasCustomMutations()) {
@@ -609,8 +609,8 @@ namespace ga
 			// Mutate the variables directly
 			doCustomMutations();
 
-			// Update serialized string with the new mutations
-			serializeChromos();
+			// Update encoded string with the new mutations
+			encodeChromos();
 		}
 	}
 
@@ -815,7 +815,7 @@ namespace ga
 	}
 
 	/**
-	*	@brief  A crossover method that replaces data in "unsafe" Chromos with direct copies of serialized data in "safe" Chromos.
+	*	@brief  A crossover method that replaces data in "unsafe" Chromos with direct copies of encoded data in "safe" Chromos.
 	*
 	*	@return void
 	*/
@@ -839,7 +839,7 @@ namespace ga
 
 	/**
 	*	@brief  A crossover method that replaces data in "unsafe" Chromos with shuffled data from two random "safe" Chromos.
-	*	Each byte in the serialized data is chosen randomly from the
+	*	Each byte in the encoded data is chosen randomly from the
 	*	corresponding bytes of the parent Chromos.
 	*
 	*	@return void
@@ -950,7 +950,7 @@ namespace ga
 			getUniqueRandomNumbers(mutationList, m_numEvolveMutate, m_numEvolveSafe, m_generationSize, m_randomGenerator);
 			for (size_t i{ 0 }; i < m_numEvolveMutate; ++i)
 			{
-				m_chromo.at(mutationList.at(i))->mutate(m_serialItemIndices, m_mutationLimits, m_mutationSelection,
+				m_chromo.at(mutationList.at(i))->mutate(m_encodedPartitions, m_mutationLimits, m_mutationSelection,
 					m_mutationCountMax, m_mutationBitWidth, m_mutationChanceIn100);
 			}
 		}
@@ -959,7 +959,7 @@ namespace ga
 			// instead mutate all unsafe
 			for (size_t i{ m_firstIdEvolveMutate }; i< m_generationSize; ++i)
 			{
-				m_chromo.at(i)->mutate(m_serialItemIndices, m_mutationLimits, m_mutationSelection,
+				m_chromo.at(i)->mutate(m_encodedPartitions, m_mutationLimits, m_mutationSelection,
 					m_mutationCountMax, m_mutationBitWidth, m_mutationChanceIn100);
 			}
 		}
@@ -971,7 +971,7 @@ namespace ga
 	*	a random range. 
 	*	
 	*	It is often more effective to mutate floats this way than to include them
-	*	in the serialized mutation.
+	*	in the encoded mutation.
 	*
 	*	@return void
 	*/
@@ -1072,30 +1072,30 @@ namespace ga
 	}
 
 	/**
-	*	@brief  Iterates through all Chromos, calling their serialize() method.
+	*	@brief  Iterates through all Chromos, calling their encode() method.
 	*
 	*	@return void
 	*/
 	template <typename C>
-	void GeneticAlgorithm<C>::serializeChromos()
+	void GeneticAlgorithm<C>::encodeChromos()
 	{
 		for (size_t i{ 0 }; i < m_generationSize; ++i)
 		{
-			m_chromo.at(i)->serialize();
+			m_chromo.at(i)->encode();
 		}
 	}
 
 	/**
-	*	@brief  Iterates through all Chromos, calling their deserialize() method.
+	*	@brief  Iterates through all Chromos, calling their decode() method.
 	*
 	*	@return void
 	*/
 	template <typename C>
-	void GeneticAlgorithm<C>::deserializeChromos()
+	void GeneticAlgorithm<C>::decodeChromos()
 	{
 		for (size_t i{ m_numEvolveSafe }; i < m_generationSize; ++i)
 		{
-			m_chromo.at(i)->deserialize();
+			m_chromo.at(i)->decode();
 			m_chromo.at(i)->applyLimits();
 		}
 	}

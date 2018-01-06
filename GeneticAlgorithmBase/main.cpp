@@ -39,29 +39,29 @@ int main()
 	for (int i{ 0 }; i < 1000; ++i) {
 		//dd.at(0) += ga::randomRangeDouble(-5.0, 5.0, &rand);
 		//dd.at(0) = 0;
-		cout << dd.at(0) << " [" << ga::serializeVector(dd) << "]\n";
+		cout << dd.at(0) << " [" << ga::encodeVector(dd) << "]\n";
 		
 		s = "";
-		s += ga::serializeVector(a);
-		s += ga::serializeVector(b);
-		s += ga::serializeBoolVector(bl);
-		s += ga::serializeVector(dd);
+		s += ga::encodeVector(a);
+		s += ga::encodeVector(b);
+		s += ga::encodeBoolVector(bl);
+		s += ga::encodeVector(dd);
 		
 		size_t l{ 0 };
-		l = ga::deserializeVector(a, s, l);
-		l = ga::deserializeVector(b, s, l);
-		l = ga::deserializeBoolVector(bl, s, l);
-		l = ga::deserializeVector(dd, s, l);
+		l = ga::decodeVector(a, s, l);
+		l = ga::decodeVector(b, s, l);
+		l = ga::decodeBoolVector(bl, s, l);
+		l = ga::decodeVector(dd, s, l);
 		
-		cout << dd.at(0) << " [" << ga::serializeVector(dd) << "]\n";
+		cout << dd.at(0) << " [" << ga::encodeVector(dd) << "]\n";
 	}
 
 	cin.get();*/
 
 	/*string s{ "1234567890" };
-	vector<ga::SerialPartition> sp;
-	sp.push_back(ga::SerialPartition(0, 5));
-	sp.push_back(ga::SerialPartition(5, 5));
+	vector<ga::EncodedPartition> sp;
+	sp.push_back(ga::EncodedPartition(0, 5));
+	sp.push_back(ga::EncodedPartition(5, 5));
 	for (int iii{ 0 }; iii < 5; ++iii)
 	{
 		s = "1234567890";
@@ -74,7 +74,7 @@ int main()
 
 	//ChromoMaxSum* test = new ChromoMaxSum(static_cast<size_t> (0), static_cast<int>(0));
 	//cout << *test;
-	ga::GeneticAlgorithm<ga::ChromoKnapsack>* ga1 = new ga::GeneticAlgorithm<ga::ChromoKnapsack>("Test A", 10, 0, &rand);
+	ga::GeneticAlgorithm<ga::ChromoTestFeatures>* ga1 = new ga::GeneticAlgorithm<ga::ChromoTestFeatures>("Test A", 10, 0, &rand);
 	
 	ga1->setNumberToCopy(2);
 	ga1->setNumberToShuffle(2);
@@ -82,19 +82,19 @@ int main()
 	ga1->setNumberToMutate(6);
 
 	ga1->setMutationSelection(ga::MutationSelection::entirePartition);
-	ga1->setMutationCountMax(3);
+	ga1->setMutationCountMax(8);
 	ga1->setMutationBitWidth(8);
 	ga1->setMutationChanceIn100(30);
 
 	cout << *ga1;
 
-	for (int g{ 0 }; g < 3; g++) {
+	for (int g{ 0 }; g < 150; g++) {
 		ga1->advanceGeneration(false);
-		cout << *ga1;
+		//cout << *ga1;
 		cout << "\n\n";
 	}
 	cout << *ga1;
-	cout << "\nWRITING TO FILE, GEN = " << ga1->getGeneration() << "\n";
+	/*cout << "\nWRITING TO FILE, GEN = " << ga1->getGeneration() << "\n";
 	ga1->writeToFileAsCSV("TestFile1.csv");
 
 	for (int g{ 0 }; g < 1; g++) {
@@ -107,7 +107,7 @@ int main()
 	ga1->readFromFileAsCSV("TestFile1.csv");
 	cout << "NOW GEN = " << ga1->getGeneration() << "\n";
 	cout << *ga1;
-	
+	*/
 
 	cout << "Destructing...";
 	delete ga1;

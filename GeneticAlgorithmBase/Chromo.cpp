@@ -3,37 +3,37 @@
 namespace ga
 {
 	/**
-	*	@brief  Writes the serialized data to a file stream.
-	*	Outputs the character count, followed by the serial string.
+	*	@brief  Writes the encoded data to a file stream.
+	*	Outputs the character count, followed by the encoded string.
 	*
 	*	@param  t_oStream specifies the file stream to write to
 	*	@return void
 	*/
 	void Chromo::writeToFileAsBinary(std::ofstream& t_oStream)
 	{
-		size_t characters = m_serialized.size();
+		size_t characters = m_encoded.size();
 		t_oStream.write((char*) &characters, sizeof(size_t));
-		t_oStream.write(&m_serialized[0], characters);
+		t_oStream.write(&m_encoded[0], characters);
 	}
 
 	/**
-	*	@brief  Reads the serialized data from a a file stream.
-	*	Inputs the character count, followed by the serial string.
+	*	@brief  Reads the encoded data from a a file stream.
+	*	Inputs the character count, followed by the encoded string.
 	*
 	*	@param  t_iStream specifies the file stream to read from
 	*	@return void
 	*/
 	void Chromo::readFromFileAsBinary(std::ifstream& t_iStream)
 	{
-		// Read serialization size first
+		// Read encoded size first
 		char* readMemSizeT;
 		readMemSizeT = new char[sizeof(size_t)];
 		t_iStream.read(readMemSizeT, sizeof(size_t));
 		size_t characters = *((size_t*)readMemSizeT);
 		
 		// Now read string
-		m_serialized.resize(characters);
-		t_iStream.read(&m_serialized[0], characters);
+		m_encoded.resize(characters);
+		t_iStream.read(&m_encoded[0], characters);
 		
 		delete[] readMemSizeT;
 	}
@@ -107,7 +107,7 @@ namespace ga
 	*/
 	std::string Chromo::getEncoding() const
 	{
-		return m_serialized;
+		return m_encoded;
 	}
 
 	/**
@@ -122,43 +122,43 @@ namespace ga
 	}
 
 	/**
-	*	@brief  Mutates the serialized data.
+	*	@brief  Mutates the encoded data.
 	*	The number of mutations is randomly decided between 1 and the mutation count max.
 	*
-	*	@param  t_serialItemIndices is a vector of serial indices that identifies where values are in the serialized string
+	*	@param  t_encodedPartitions is a vector of indices that identifies where values are in the encoded string
 	*   @param  t_mutationMode is a MutationMode enum specifying how mutations are handled
 	*	@return void
 	*/
-	void Chromo::mutate(std::vector<SerialPartition>& t_serialIndices, const MutationLimits t_mutationLimits, const MutationSelection t_mutationSelection,
+	void Chromo::mutate(std::vector<EncodedPartition>& t_encodedPartitions, const MutationLimits t_mutationLimits, const MutationSelection t_mutationSelection,
 		const size_t t_mutationCountMax, const size_t t_mutationBitWidth, const short int t_mutationChanceIn100)
 	{
 		const size_t mutationCount{ m_randomGenerator() % t_mutationCountMax + static_cast<size_t>(1) };
-		//std::cout << "\n[" << m_serialized << "] to";
-		mutateRandomBits(m_serialized, t_serialIndices, t_mutationLimits, t_mutationSelection, mutationCount, t_mutationBitWidth, t_mutationChanceIn100, m_randomGenerator);
-		//std::cout << "\n[" << m_serialized << "]";
+		//std::cout << "\n[" << m_encoded << "] to";
+		mutateRandomBits(m_encoded, t_encodedPartitions, t_mutationLimits, t_mutationSelection, mutationCount, t_mutationBitWidth, t_mutationChanceIn100, m_randomGenerator);
+		//std::cout << "\n[" << m_encoded << "]";
 	}
 
 	/**
-	*	@brief  Modifies a SerialPartition vector, outlining where values will be within the serialized string according to a data vector.
-	*	For each vector item, a new partition is pushed to t_serialItemIndices
+	*	@brief  Modifies a EncodedPartition vector, outlining where values will be within the encoded string according to a data vector.
+	*	For each vector item, a new partition is pushed to t_encodedPartitions
 	*	with information on that data value.
 	*
-	*	@param  t_serialItemIndices is a vector of serial indices that identifies where values are in the serialized string. The function adds entries to this vector.
+	*	@param  t_encodedPartitions is a vector of indices that identifies where values are in the encoded string. The function adds entries to this vector.
 	*	@param  t_mutationLimits is a struct containing byte and partition limits to modify
-	*   @param  t_nextLocation is an index pointing to the next location in the serialized string. It is incremented as partitions are found.
+	*   @param  t_nextLocation is an index pointing to the next location in the encoded string. It is incremented as partitions are found.
 	*   @param  t_itemSize is the number of bytes in the vector type
 	*   @param  t_vectorSize is the number of items in the vector
 	*   @param  t_vectorName is the name of the vector
 	*   @param  t_mutatable is a bool representing whether to allow this partition to be mutated
 	*	@return void
 	*/
-	void Chromo::addItemIndicesOfVector(std::vector<SerialPartition>& t_serialItemIndices, MutationLimits& t_mutationLimits, size_t& t_nextLocation, const size_t t_itemSize, const size_t t_vectorSize, const std::string t_vectorName, const bool t_mutatable)
+	void Chromo::addItemIndicesOfVector(std::vector<EncodedPartition>& t_encodedPartitions, MutationLimits& t_mutationLimits, size_t& t_nextLocation, const size_t t_itemSize, const size_t t_vectorSize, const std::string t_vectorName, const bool t_mutatable)
 	{
 		std::string partitionName;
 		partitionName.reserve(t_vectorName.length() + 5);
 		for (size_t i{ 0 }; i < t_vectorSize; ++i) {
 			partitionName = t_vectorName + "_" + std::to_string(i);
-			t_serialItemIndices.push_back(SerialPartition(partitionName, t_nextLocation, t_itemSize, SerialPartitionType::normal));
+			t_encodedPartitions.push_back(EncodedPartition(partitionName, t_nextLocation, t_itemSize, EncodedPartitionType::normal));
 			t_nextLocation += t_itemSize;
 		}
 		
@@ -170,23 +170,23 @@ namespace ga
 	}
 
 	/**
-	*	@brief  Modifies a SerialPartition vector, outlining where values will be within the serialized string according to a boolean vector.
-	*	For each vector item, a new partition is pushed to t_serialItemIndices
+	*	@brief  Modifies an EncodedPartition vector, outlining where values will be within the encoded string according to a boolean vector.
+	*	For each vector item, a new partition is pushed to t_encodedPartitions
 	*	with information on that data value.
 	*	
-	*	Since in the serialized string, booleans are packed into bytes
+	*	Since in the encoded string, booleans are packed into bytes
 	*	containing 8 boolean values each, the partition size is the
 	*	vector size divided by 8 and rounded up.
 	*
-	*	@param  t_serialItemIndices is a vector of serial indices that identifies where values are in the serialized string. The function adds entries to this vector.
+	*	@param  t_encodedPartitions is a vector of indices that identifies where values are in the encoded string. The function adds entries to this vector.
 	*	@param  t_mutationLimits is a struct containing byte and partition limits to modify
-	*   @param  t_nextLocation is an index pointing to the next location in the serialized string. It is incremented as partitions are found.
+	*   @param  t_nextLocation is an index pointing to the next location in the encoded string. It is incremented as partitions are found.
 	*   @param  t_vectorSize is the number of items in the vector
 	*   @param  t_vectorName is the name of the vector
 	*   @param  t_mutatable is a bool representing whether to allow this partition to be mutated
 	*	@return void
 	*/
-	void Chromo::addItemIndicesOfBoolVector(std::vector<SerialPartition>& t_serialItemIndices, MutationLimits& t_mutationLimits, size_t& t_nextLocation, const size_t t_vectorSize, const std::string t_vectorName, const bool t_mutatable)
+	void Chromo::addItemIndicesOfBoolVector(std::vector<EncodedPartition>& t_encodedPartitions, MutationLimits& t_mutationLimits, size_t& t_nextLocation, const size_t t_vectorSize, const std::string t_vectorName, const bool t_mutatable)
 	{
 		// Bools are treated as bits
 		// So this is stored as a single partition, marked as BoolPartition
@@ -200,7 +200,7 @@ namespace ga
 			bytesUsed = t_vectorSize / 8 + 1;
 		}
 
-		t_serialItemIndices.push_back(SerialPartition(t_vectorName, t_nextLocation, bytesUsed, SerialPartitionType::eachBitUnique, t_vectorSize));
+		t_encodedPartitions.push_back(EncodedPartition(t_vectorName, t_nextLocation, bytesUsed, EncodedPartitionType::eachBitUnique, t_vectorSize));
 		t_nextLocation += bytesUsed;
 		
 		// Add to limits

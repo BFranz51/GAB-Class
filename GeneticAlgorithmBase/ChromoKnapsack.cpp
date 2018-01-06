@@ -27,7 +27,7 @@ namespace ga
 	std::ostream& operator<<(std::ostream& t_output, const ChromoKnapsack& self) {
 		t_output << self.hasItem;
 		t_output << "\t Score = " << self.getScore();
-		//t_output << ", \tserial = [[" << self.m_serialized << "]]";
+		//t_output << ", \tencoded = [[" << self.m_encoded << "]]";
 		return t_output;
 	}
 
@@ -54,13 +54,13 @@ namespace ga
 	}
 
 	/**
-	*	@brief  This is a static function used by GeneticAlgorithm.h to obtain the data partitions within the serialized chromosome.
+	*	@brief  This is a static function used by GeneticAlgorithm.h to obtain the data partitions within the encoded chromosome.
 	*
 	*	@param  t_indices specifies the vector of partitions to be modified
 	*   @param  t_mutateBytes specifies the number of bytes allowed for the crossover and mutation phases
 	*	@return void
 	*/
-	void ChromoKnapsack::getSerialItemIndices(std::vector<SerialPartition>& t_indices, MutationLimits& t_mutationLimits)
+	void ChromoKnapsack::getEncodedPartitions(std::vector<EncodedPartition>& t_indices, MutationLimits& t_mutationLimits)
 	{
 		t_indices.clear();
 		size_t location{ 0 };
@@ -105,39 +105,39 @@ namespace ga
 	*
 	*	@return void
 	*/
-	void ChromoKnapsack::serialize()
+	void ChromoKnapsack::encode()
 	{
-		m_serialized = "";
+		m_encoded = "";
 
 		// Calculate string size needed
-		size_t serialSize{ 0 };
-		serialSize += sizeof(bool) * hasItem.size();
+		size_t encodedSize{ 0 };
+		encodedSize += sizeof(bool) * hasItem.size();
 
 		// Reserve string memory
-		m_serialized.reserve(serialSize + static_cast<size_t>(1));
+		m_encoded.reserve(encodedSize + static_cast<size_t>(1));
 
-		m_serialized += serializeBoolVector(hasItem);
+		m_encoded += encodeBoolVector(hasItem);
 	}
 
 	/**
-	*	@brief  Converts the serialized string into data values used in fitness function.
+	*	@brief  Converts the encoded string into data values used in fitness function.
 	*
 	*	@return void
 	*/
-	void ChromoKnapsack::deserialize()
+	void ChromoKnapsack::decode()
 	{
-		if (m_serialized.length() > 0) {
+		if (m_encoded.length() > 0) {
 			size_t curStrIndex{ 0 };
-			curStrIndex = deserializeBoolVector(hasItem, m_serialized, curStrIndex);
+			curStrIndex = decodeBoolVector(hasItem, m_encoded, curStrIndex);
 		}
 		else {
-			std::cout << "ERROR: Serialized string not found!";
+			std::cout << "ERROR: Encoded string not found!";
 		}
 	}
 
 	/**
 	*	@brief  Performs custom mutations on data values
-	*	These data values should be part of the serialized string,
+	*	These data values should be part of the encoded string,
 	*	yet not used in the crossover and mutation phases.
 	*
 	*	@return void

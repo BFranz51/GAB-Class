@@ -41,12 +41,12 @@ namespace ga
 		const static bool hasCustomMutations() { return true; };
 
 		// Data processing
-		void serialize();
-		void deserialize();
+		void encode();
+		void decode();
 		void applyLimits();
 
 		// Extra info to be used during crossovers and mutations
-		static void getSerialItemIndices(std::vector<SerialPartition>&, MutationLimits&);
+		static void getEncodedPartitions(std::vector<EncodedPartition>&, MutationLimits&);
 
 		// Custom output
 		friend std::ostream& operator<<(std::ostream&, const ChromoTestFeatures&);
@@ -57,6 +57,7 @@ namespace ga
 		void readDataFromCSV(std::vector<std::string>&);
 
 	private:
+		std::vector<short int> sudoku;
 		std::vector<short int> num;
 		std::vector<int> num2;
 		std::vector<bool> bools;

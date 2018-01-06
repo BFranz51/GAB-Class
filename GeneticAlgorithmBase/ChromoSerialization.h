@@ -2,7 +2,7 @@
 * @class ChromoSerialization.h
 * @author Bryan Franz
 * @date December 26, 2017
-* @brief Contains static functions for working with serialized data
+* @brief Contains static functions for working with encoded data
 * Includes:
 *   - Conversion to/from primitives
 *   - Conversion to/from vectors
@@ -28,100 +28,102 @@
 namespace ga
 {
 	/**
-	*	@brief  Takes in a value and returns a short string containing the serialized value
+	*	@brief  Takes in a value and returns a short string containing the encoded value
 	*	The length of the string is the number of bytes in the primitive
 	*
 	*	@param  t_data specifies the value to be converted
-	*	@return string containing the serialized data
+	*	@return string containing the encoded data
 	*/
 	template <typename T>
-	static std::string serializePrimitive(T t_data)
+	static std::string encodePrimitive(T t_data)
 	{
-		string serializedValue = "";
-		serializedValue.reserve(sizeof(T) + 1);
+		std::string encoded = "";
+		encoded.reserve(sizeof(T) + 1);
 
 		T* pointerToData = &t_data;
 		char *charPointer = reinterpret_cast<char*>(pointerToData);
 		for (size_t i{ 0 }; i < sizeof(T); ++i)
 		{
 			char ch = *charPointer;
-			serializedValue += ch;
+			encoded += ch;
 			charPointer++;
 		}
-		return serializedValue;
+		return encoded;
 	}
 
 	/**
-	*	@brief  Modifies a primitive to be the value of a serialized string
+	*	@brief  Modifies a primitive to be the value of an encoded string
 	*
 	*	@param  t_data specifies the value to be modified
-	*   @param  t_serialized is the serialized value
+	*   @param  t_encoded is the encoded value
 	*	@return void
 	*/
 	template <typename T>
-	static size_t deserializePrimitive(T& t_data, std::string& t_serialized)
+	static size_t decodePrimitive(T& t_data, std::string& t_encoded)
 	{
 		// First, convert to a character array
-		char* serializedChars = new char[sizeof(T)];
+		char* encodedChars = new char[sizeof(T)];
 		for (size_t i{ 0 }; i < sizeof(T); ++i) {
-			serializedChars[i] = t_serialized.at(i);
+			encodedChars[i] = t_encoded.at(i);
 		}
 
-		T number = *((T*)serializedChars);
+		T number = *((T*)encodedChars);
 		t_data = number;
-		free(serializedChars);
+		free(encodedChars);
 		return sizeof(T);
 	}
 
 	/**
-	*	@brief  Takes in a vector and returns a short string containing the serialized vector
+	*	@brief  Takes in a vector and returns a short string containing the encoded vector
 	*	The length of the string is the number of bytes in the primitive multiplied by the size of the vector
 	*
 	*	@param  t_vec specifies the value to be converted
-	*	@return string containing the serialized vector
+	*	@return string containing the encoded vector
 	*/
 	template <typename T>
-	static std::string serializeVector(std::vector<T>& t_vec)
+	static std::string encodeVector(std::vector<T>& t_vec)
 	{
-		std::string serializedVector = "";
-		serializedVector.reserve(sizeof(T)  * t_vec.size() + 1);
+		std::string encodedVector = "";
+		const size_t n{ t_vec.size() };
+		encodedVector.reserve(sizeof(T) * n + 1);
 
-		for (size_t i{ 0 }; i < t_vec.size(); ++i)
+		for (size_t i{ 0 }; i < n; ++i)
 		{
 			T* pointerToData = &t_vec.at(i);
 			char *charPointer = reinterpret_cast<char*>(pointerToData);
 			for (size_t ii = 0; ii < sizeof(T); ++ii)
 			{
 				char ch = *charPointer;
-				serializedVector += ch;
+				encodedVector += ch;
 				charPointer++;
 			}
 		}
 
-		return serializedVector;
+		return encodedVector;
 	}
 
 	/**
-	*	@brief  Modifies a vector to pull values from a serialized string
+	*	@brief  Modifies a vector to pull values from a encoded string
 	*
 	*	@param  t_vec specifies the vector to be modified
-	*   @param  t_serialized is the serialized value
+	*   @param  t_encoded is the encoded value
 	*   @param  t_strFirstIndex is the location where the vector data begins
-	*	@return size_t indicating where the next data in the serialized string is location
+	*	@return size_t indicating where the next data in the encoded string is location
 	*/
 	template <typename T>
-	static size_t deserializeVector(std::vector<T>& t_vec, const std::string& t_serialized, const size_t t_strFirstIndex)
+	static size_t decodeVector(std::vector<T>& t_vec, const std::string& t_encoded, const size_t t_strFirstIndex)
 	{
 		// Character buffer for each value
 		char* buffer = new char[sizeof(T)];
 
 		// Iterate through each item
-		for (size_t i{ 0 }; i < t_vec.size(); ++i)
+		const size_t n { t_vec.size() };
+		for (size_t i{ 0 }; i < n; ++i)
 		{
 			// Items can be contained within multiple characters
 			// So we iterate through each character
 			for (size_t ii{ 0 }; ii < sizeof(T); ++ii) {
-				buffer[ii] = t_serialized.at(t_strFirstIndex + i * sizeof(T) + ii);
+				buffer[ii] = t_encoded.at(t_strFirstIndex + i * sizeof(T) + ii);
 			}
 
 			// Get value from buffer
@@ -137,20 +139,21 @@ namespace ga
 	}
 
 	/**
-	*	@brief  Takes in a bool vector and returns a short string containing the serialized vector
+	*	@brief  Takes in a bool vector and returns a short string containing the encoded vector
 	*
 	*	@param  t_vec specifies the value to be converted
-	*	@return string containing the serialized vector
+	*	@return string containing the encoded vector
 	*/
-	static std::string serializeBoolVector(std::vector<bool>& t_vec)
+	static std::string encodeBoolVector(std::vector<bool>& t_vec)
 	{
-		std::string serializedVector = "";
-		serializedVector.reserve(t_vec.size() / 8 + 2);
+		const size_t n{ t_vec.size() };
+		std::string encodedVector = "";
+		encodedVector.reserve(n / 8 + 2);
 		
 		size_t byteId{ 0 };
 		size_t bitId{ 0 };
 		char curChar{ 0x00 };
-		for (size_t i{ 0 }; i < t_vec.size(); ++i)
+		for (size_t i{ 0 }; i < n; ++i)
 		{
 			// Byte defaults to 00000000
 			// Set bit if boolean == True
@@ -162,27 +165,27 @@ namespace ga
 			++bitId;
 			if (bitId >= 8) {
 				bitId = 0;
-				serializedVector += curChar;
+				encodedVector += curChar;
 				++byteId;
 			}
 		}
 		// If we were in the middle of a byte, write it to the string
 		if (bitId > 0) {
-			serializedVector += curChar;
+			encodedVector += curChar;
 		}
 
-		return serializedVector;
+		return encodedVector;
 	}
 
 	/**
-	*	@brief  Modifies a bool vector to pull values from a serialized string
+	*	@brief  Modifies a bool vector to pull values from an encoded string
 	*
 	*	@param  t_vec specifies the vector to be modified
-	*   @param  t_serialized is the serialized value
+	*   @param  t_encoded is the encoded value
 	*   @param  t_strFirstIndex is the location where the vector data begins
-	*	@return size_t indicating where the next data in the serialized string is location
+	*	@return size_t indicating where the next data in the encoded string is location
 	*/
-	static size_t deserializeBoolVector(std::vector<bool>& t_vec, std::string& t_serialized, const size_t t_strFirstIndex)
+	static size_t decodeBoolVector(std::vector<bool>& t_vec, std::string& t_encoded, const size_t t_strFirstIndex)
 	{
 		size_t bytesUsed;
 		if (t_vec.size() % 8 == 0) {
@@ -195,7 +198,7 @@ namespace ga
 		size_t byteId { t_strFirstIndex };
 		size_t bitId { 0 };
 		size_t vectorSize{ t_vec.size() };
-		char buffer { t_serialized.begin()[byteId] };
+		char buffer { t_encoded.begin()[byteId] };
 		for (size_t i{ 0 }; i < vectorSize; ++i)
 		{
 			// Read bit as boolean
@@ -204,7 +207,7 @@ namespace ga
 			// Iterate
 			if (++bitId >= 8 && i < vectorSize - 1) {
 				bitId = 0;
-				buffer = t_serialized.begin()[++byteId];
+				buffer = t_encoded.begin()[++byteId];
 			}
 		}
 
@@ -220,18 +223,20 @@ namespace ga
 	*   @param  t_randomGenerator is the random number generator to use
 	*	@return a shuffled string
 	*/
-	static std::string shuffleSerialized(std::string const& t_source1, std::string const& t_source2, int(*t_randomGenerator)(void))
+	static std::string shuffleEncodedData(std::string const& t_source1, std::string const& t_source2, int(*t_randomGenerator)(void))
 	{
 		if (t_source1.length() != t_source2.length())
 		{
-			// Error: One of parents was not serialized correctly
-			std::cout << "\nSERIAL ERROR!\n";
+			// Error: One of parents was not encoded correctly
+			std::cout << "\nENCODING ERROR!\n";
 			return "";
 		}
-		std::string shuffledString = "";
-		shuffledString.reserve(t_source1.length());
 
-		for (size_t i{ 0 }; i < t_source1.length(); ++i)
+		const size_t n{ t_source1.length() };
+		std::string shuffledString = "";
+		shuffledString.reserve(n);
+
+		for (size_t i{ 0 }; i < n; ++i)
 		{
 			if (t_randomGenerator() % 2) {
 				shuffledString += t_source1.at(i);
@@ -255,12 +260,12 @@ namespace ga
 	*   @param  t_randomGenerator is the random number generator to use
 	*	@return a shuffled string
 	*/
-	static std::string nSplitSerialized(std::string const& t_source1, std::string const& t_source2, size_t t_splits, int(*t_randomGenerator)(void))
+	static std::string nSplitEncodedData(std::string const& t_source1, std::string const& t_source2, size_t t_splits, int(*t_randomGenerator)(void))
 	{
 		if (t_source1.length() != t_source2.length())
 		{
-			// Error: One of parents was not serialized correctly
-			std::cout << "\nSERIAL ERROR!\n";
+			// Error: One of parents was not encoded correctly
+			std::cout << "\nENCODING ERROR!\n";
 			return "";
 		}
 		std::string result = "";
@@ -274,9 +279,10 @@ namespace ga
 
 		short int useStringNow{ t_randomGenerator() % 2 };
 		size_t locationNow{ 0 };
-		for (size_t i{ 0 }; i < splitLocations.size(); ++i)
+		const size_t n{ splitLocations.size() };
+		for (size_t i{ 0 }; i < n; ++i)
 		{
-			size_t partitionSize { (i != splitLocations.size() - size1) ? splitLocations.at(i + size1) - i : t_source1.length() - i };
+			size_t partitionSize { (i != n - size1) ? splitLocations.at(i + size1) - i : t_source1.length() - i };
 			result += useStringNow ? t_source1.substr(locationNow, partitionSize) : t_source2.substr(locationNow, partitionSize);
 
 			useStringNow = (useStringNow + 1) % 2;
@@ -286,7 +292,7 @@ namespace ga
 		return result;
 	}
 
-	static void mutateRandomBits(std::string& t_serial, std::vector<SerialPartition>& t_serialIndices, const MutationLimits t_mutationLimits,
+	static void mutateRandomBits(std::string& t_encoded, std::vector<EncodedPartition>& t_encodedPartitions, const MutationLimits t_mutationLimits,
 		const MutationSelection t_mutationSelection, const size_t t_mutationCount, const size_t t_mutationBitWidth,
 		const short int t_mutationChanceIn100, int(*t_randomGenerator)(void))
 	{
@@ -296,15 +302,15 @@ namespace ga
 			size_t byteId{ 0 };
 			short int bitId{ 0 };
 			size_t bitsLeft{ t_mutationBitWidth };
-			SerialPartitionType partitionType{ SerialPartitionType::normal };
+			EncodedPartitionType partitionType{ EncodedPartitionType::normal };
 			
 			// Apply MutationSelection settings
 			if (t_mutationSelection == MutationSelection::entirePartition) {
 				size_t partitionId{ t_randomGenerator() % t_mutationLimits.partitions };
 				
-				byteId = t_serialIndices.at(partitionId).location;
-				bitsLeft = t_serialIndices.at(partitionId).bytes * 8;
-				partitionType = t_serialIndices.at(partitionId).type;
+				byteId = t_encodedPartitions.at(partitionId).location;
+				bitsLeft = t_encodedPartitions.at(partitionId).bytes * 8;
+				partitionType = t_encodedPartitions.at(partitionId).type;
 			}
 			else if (t_mutationSelection == MutationSelection::pureRandom) {
 				byteId = t_randomGenerator() % t_mutationLimits.bytes;
@@ -314,10 +320,10 @@ namespace ga
 				byteId = t_randomGenerator() % t_mutationLimits.bytes;
 			}
 
-			if (partitionType == SerialPartitionType::normal)
+			if (partitionType == EncodedPartitionType::normal)
 			{
 				// Modify sequence of bits, up to t_mutationWidth
-				char byte{ t_serial.begin()[byteId] };
+				char byte{ t_encoded.begin()[byteId] };
 				while (bitsLeft > 0)
 				{
 					// Random selection for bits to toggle
@@ -330,15 +336,15 @@ namespace ga
 					++bitId;
 					// Advance to next byte
 					if (bitId >= 8) {
-						// Return mutated byte to t_serial
-						t_serial.begin()[byteId] = byte;
+						// Return mutated byte
+						t_encoded.begin()[byteId] = byte;
 
 						// Move to next byte, if possible
 						if (byteId + 1 < t_mutationLimits.bytes) {
 							bitId -= 8;
 							++byteId;
 
-							byte = t_serial.begin()[byteId];
+							byte = t_encoded.begin()[byteId];
 						}
 						else {
 							// Exit loop because there are no more possible bits to modify
@@ -348,10 +354,10 @@ namespace ga
 
 					--bitsLeft;
 				}
-				// Return mutated byte to t_serial
-				t_serial.begin()[byteId] = byte;
+				// Return mutated byte
+				t_encoded.begin()[byteId] = byte;
 			}
-			else if (partitionType == SerialPartitionType::eachBitUnique)
+			else if (partitionType == EncodedPartitionType::eachBitUnique)
 			{
 				// Special handling for boolean partitions
 				// As the intent of EntirePartition mode is to
@@ -364,11 +370,11 @@ namespace ga
 
 				// Toggle random bit
 				selectByte = byteId;
-				char byte{ t_serial.begin()[selectByte] };
+				char byte{ t_encoded.begin()[selectByte] };
 				byte ^= (1 << selectBit);
 
-				// Return mutated byte to t_serial
-				t_serial.begin()[selectByte] = byte;
+				// Return mutated byte
+				t_encoded.begin()[selectByte] = byte;
 			}
 		}
 	}

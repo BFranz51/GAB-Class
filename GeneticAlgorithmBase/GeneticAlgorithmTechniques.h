@@ -16,25 +16,25 @@ namespace ga
 	enum class MutationMode { value, byte, bit };
 	enum class MutationTechnique { randomize, offset };
 	enum class ShuffleMode { value, byte };
-	enum class SerialPartitionType { normal, eachBitUnique };
+	enum class EncodedPartitionType { normal, eachBitUnique };
 
-	struct SerialPartition
+	struct EncodedPartition
 	{
 	public:
 		std::string name;
 		size_t location;
 		size_t bytes;
-		SerialPartitionType type;
+		EncodedPartitionType type;
 		size_t uniqueBits;
-		SerialPartition()
+		EncodedPartition()
 			: location(0),
 			bytes(0)
 		{};
-		SerialPartition(const std::string t_name, const size_t t_location, const size_t t_bytes, const SerialPartitionType t_serialPartitionType, const size_t t_uniqueBits = 0)
+		EncodedPartition(const std::string t_name, const size_t t_location, const size_t t_bytes, const EncodedPartitionType t_EncodedPartitionType, const size_t t_uniqueBits = 0)
 			: name(t_name),
 			location(t_location),
 			bytes(t_bytes),
-			type(t_serialPartitionType),
+			type(t_EncodedPartitionType),
 			uniqueBits(t_uniqueBits)
 		{};
 	};
@@ -60,7 +60,7 @@ namespace ga
 	{
 		std::cout << "Beginning GA tests...\n";
 		ga::GeneticAlgorithm<C>* gaTest = new ga::GeneticAlgorithm<C>("Test run", 12, 1, t_randomGenerator);
-		std::cout << "\nTesting serialization...\n";
+		std::cout << "\nTesting encoding...\n";
 		gaTest->setNumberToCopy(1);
 		gaTest->setNumberToShuffle(0);
 		gaTest->setNumberToCrossover(0);
@@ -71,8 +71,8 @@ namespace ga
 		std::cout << "\nAll values should be copied below!\n";
 		for (int i{ 0 }; i < 4; ++i) {
 			gaTest->advanceGeneration();
-			gaTest->serializeChromos();
-			gaTest->deserializeChromos();
+			gaTest->encodeChromos();
+			gaTest->decodeChromos();
 			std::cout << *gaTest;
 		}
 		

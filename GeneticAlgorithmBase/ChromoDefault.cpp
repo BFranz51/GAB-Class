@@ -28,7 +28,7 @@ namespace ga
 		
 		// TODO: Output any variables and vectors that would be helpful
 
-		t_output << ", \tserial = [[" << self.m_serialized << "]]";
+		t_output << ", \tencoded = [[" << self.m_encoded << "]]";
 
 		return t_output;
 	}
@@ -62,19 +62,19 @@ namespace ga
 	}
 
 	/**
-	*	@brief  This is a static function used by GeneticAlgorithm.h to obtain the data partitions within the serialized chromosome.
+	*	@brief  This is a static function used by GeneticAlgorithm.h to obtain the data partitions within the encoded chromosome.
 	*
 	*	@param  t_indices specifies the vector of partitions to be modified
 	*   @param  t_mutateBytes specifies the number of bytes allowed for the crossover and mutation phases
 	*	@return void
 	*/
-	void ChromoDefault::getSerialItemIndices(std::vector<SerialPartition>& t_indices, MutationLimits& t_mutationLimits)
+	void ChromoDefault::getEncodedPartitions(std::vector<EncodedPartition>& t_indices, MutationLimits& t_mutationLimits)
 	{
 		t_indices.clear();
 		size_t location{ 0 };
 		t_mutationLimits.bytes = 0;
 		t_mutationLimits.partitions = 0;
-		// TODO: Fill in t_indices with all the serialized values which
+		// TODO: Fill in t_indices with all the encoded values which
 		// are meant to be modified during the crossover and mutation phases
 		
 		// EXAMPLE:
@@ -97,48 +97,48 @@ namespace ga
 	*
 	*	@return void
 	*/
-	void ChromoDefault::serialize()
+	void ChromoDefault::encode()
 	{
-		m_serialized = "";
+		m_encoded = "";
 
 		// Calculate string size needed
-		size_t serialSize{ 0 };
+		size_t encodedSize{ 0 };
 		// TODO: Calculate total string size needed
 		// EXAMPLE:
-		//	serialSize += sizeof(ints.at(0)) * ints.size();
-		//	serialSize += sizeof(bool) * bools.size();
+		//	encodedSize += sizeof(ints.at(0)) * ints.size();
+		//	encodedSize += sizeof(bool) * bools.size();
 
 		// Reserve string memory
-		m_serialized.reserve(serialSize + static_cast<size_t>(1));
+		m_encoded.reserve(encodedSize + static_cast<size_t>(1));
 
-		// TODO: Add data values to serialized string, using methods from static libraries
+		// TODO: Add data values to encoded string, using methods from static libraries
 		// EXAMPLE:
-		//	m_serialized += serializeVector(ints);
-		//	m_serialized += serializeBoolVector(bools);
+		//	m_encoded += encodeVector(ints);
+		//	m_encoded += encodeBoolVector(bools);
 	}
 
 	/**
-	*	@brief  Converts the serialized string into data values used in fitness function.
+	*	@brief  Converts the encoded string into data values used in fitness function.
 	*
 	*	@return void
 	*/
-	void ChromoDefault::deserialize()
+	void ChromoDefault::decode()
 	{
-		if (m_serialized.length() > 0) {
+		if (m_encoded.length() > 0) {
 			size_t curStrIndex{ 0 };
-			// TODO: Use static methods to pull data values from the serialized string
+			// TODO: Use static methods to pull data values from the encoded string
 			// EXAMPLE:
-			//	curStrIndex = deserializeVector(ints, m_serialized, curStrIndex);
-			//	curStrIndex = deserializeBoolVector(bools, m_serialized, curStrIndex);
+			//	curStrIndex = decodeVector(ints, m_encoded, curStrIndex);
+			//	curStrIndex = decodeBoolVector(bools, m_encoded, curStrIndex);
 		}
 		else {
-			std::cout << "ERROR: Serialized string not found!";
+			std::cout << "ERROR: Encoded string not found!";
 		}
 	}
 
 	/**
 	*	@brief  Performs custom mutations on data values
-	*	These data values should be part of the serialized string,
+	*	These data values should be part of the encoded string,
 	*	yet not used in the crossover and mutation phases.
 	*
 	*	@return void

@@ -11,6 +11,9 @@ namespace ga
 	*/
 	void ChromoTestFeatures::initializeValues(const int t_initialStateId)
 	{
+		for (size_t i{ 0 }; i < 16; ++i)
+			sudoku.push_back(1);
+		return;
 		if (t_initialStateId == 0)
 		{
 			num.push_back(1);
@@ -64,13 +67,14 @@ namespace ga
 	*	@return Output stream
 	*/
 	std::ostream& operator<<(std::ostream& t_output, const ChromoTestFeatures& self) {
+		t_output << self.sudoku;
 		//t_output << self.num;
 		//t_output << "\t" << self.num2;
-		t_output << "\t" << self.bools;
+		//t_output << "\t" << self.bools;
 		//t_output << "\t" << self.floats;
 		//t_output << "\t" << self.betterFloats;
-		//t_output << "\t Score = " << self.getScore();
-		t_output << ", \tserial = [[" << self.m_serialized << "]]";
+		t_output << "\t Score = " << self.getScore();
+		//t_output << ", \tencoded = [[" << self.m_encoded << "]]";
 		return t_output;
 	}
 
@@ -105,23 +109,24 @@ namespace ga
 	}
 
 	/**
-	*	@brief  This is a static function used by GeneticAlgorithm.h to obtain the data partitions within the serialized chromosome.
+	*	@brief  This is a static function used by GeneticAlgorithm.h to obtain the data partitions within the encoded chromosome.
 	*
 	*	@param  t_indices specifies the vector of partitions to be modified
 	*   @param  t_mutateBytes specifies the number of bytes allowed for the crossover and mutation phases
 	*	@return void
 	*/
-	void ChromoTestFeatures::getSerialItemIndices(std::vector<SerialPartition>& t_indices, MutationLimits& t_mutationLimits)
+	void ChromoTestFeatures::getEncodedPartitions(std::vector<EncodedPartition>& t_indices, MutationLimits& t_mutationLimits)
 	{
 		t_indices.clear();
 		size_t location{ 0 };
 		t_mutationLimits.bytes = 0;
 		t_mutationLimits.partitions = 0;
-		Chromo::addItemIndicesOfVector(t_indices, t_mutationLimits, location, sizeof(short int), 2, "RandomShort", true);
+		Chromo::addItemIndicesOfVector(t_indices, t_mutationLimits, location, sizeof(short int), 16, "Sudoku", true);
+		/*Chromo::addItemIndicesOfVector(t_indices, t_mutationLimits, location, sizeof(short int), 2, "RandomShort", true);
 		Chromo::addItemIndicesOfVector(t_indices, t_mutationLimits, location, sizeof(int), 2, "RandomInt", true);
 		Chromo::addItemIndicesOfBoolVector(t_indices, t_mutationLimits, location, 6, "Bools", true);
 		Chromo::addItemIndicesOfVector(t_indices, t_mutationLimits, location, sizeof(float), 2, "RandomFloat", true);
-		Chromo::addItemIndicesOfVector(t_indices, t_mutationLimits, location, sizeof(float), 2, "BetterFloat", false);
+		Chromo::addItemIndicesOfVector(t_indices, t_mutationLimits, location, sizeof(float), 2, "BetterFloat", false);*/
 	}
 
 	/**
@@ -132,6 +137,53 @@ namespace ga
 	void ChromoTestFeatures::runFitnessFunctionLocal()
 	{
 		double total{ 0 };
+		int penalty{ 0 };
+
+		// Test lines
+		for (size_t i{ 0 }; i < 4; ++i)
+		{
+			std::vector<bool> hasNumH = { false, false, false, false };
+			std::vector<bool> hasNumV = { false, false, false, false };
+			for (size_t j{ 0 }; j < 4; ++j)
+			{
+				short int val;
+
+				// Test each horizontal line
+				val = sudoku.at(i * 4 + j);
+				if (hasNumH.at(val))
+					penalty += 1;
+				else hasNumH.at(val) = true;
+
+				// Test each vertical line
+				val = sudoku.at(j * 4 + i);
+				if (hasNumV.at(val))
+					penalty += 1;
+				else hasNumV.at(val) = true;
+			}
+		}
+
+		// Test clusters
+		for (size_t i{ 0 }; i < 2; ++i)
+		{
+			for (size_t j{ 0 }; j < 2; ++j)
+			{
+				// Test inside cluster
+				std::vector<bool> hasNum = { false, false, false, false };
+				for (size_t x{ 0 }; x < 2; ++x)
+				{
+					for (size_t y{ 0 }; y < 2; ++y)
+					{
+						short int val = sudoku.at(y * 4 + x + i * 2 + j * 8);
+						if (hasNum.at(val))
+							penalty += 1;
+						else hasNum.at(val) = true;
+					}
+				}
+			}
+		}
+
+		setScore(10000 - penalty * penalty);
+		return;
 
 		// Only count unique numbers
 		std::unordered_map<size_t, int> usedNumbers;
@@ -165,50 +217,53 @@ namespace ga
 	*
 	*	@return void
 	*/
-	void ChromoTestFeatures::serialize()
+	void ChromoTestFeatures::encode()
 	{
-		m_serialized = "";
+		m_encoded = "";
 
 		// Calculate string size needed
-		size_t serialSize{ 0 };
-		serialSize += sizeof(num.at(0)) * num.size();
-		serialSize += sizeof(num2.at(0)) * num2.size();
-		serialSize += (bools.size() / 8 + 1);
-		serialSize += sizeof(floats.at(0)) * floats.size();
-		serialSize += sizeof(betterFloats.at(0)) * betterFloats.size();
+		size_t encodedSize{ 0 };
+		encodedSize += sizeof(sudoku.at(0)) * sudoku.size();
+		/*encodedSize += sizeof(num.at(0)) * num.size();
+		encodedSize += sizeof(num2.at(0)) * num2.size();
+		encodedSize += (bools.size() / 8 + 1);
+		encodedSize += sizeof(floats.at(0)) * floats.size();
+		encodedSize += sizeof(betterFloats.at(0)) * betterFloats.size();*/
 		
 		// Reserve string memory
-		m_serialized.reserve(serialSize + static_cast<size_t>(1));
+		m_encoded.reserve(encodedSize + static_cast<size_t>(1));
 
-		m_serialized += serializeVector(num);
-		m_serialized += serializeVector(num2);
-		m_serialized += serializeBoolVector(bools);
-		m_serialized += serializeVector(floats);
-		m_serialized += serializeVector(betterFloats);
+		m_encoded += encodeVector(sudoku);
+		/*m_encoded += encodeVector(num);
+		m_encoded += encodeVector(num2);
+		m_encoded += encodeBoolVector(bools);
+		m_encoded += encodeVector(floats);
+		m_encoded += encodeVector(betterFloats);*/
 	}
 
 	/**
-	*	@brief  Converts the serialized string into data values used in fitness function.
+	*	@brief  Converts the encoded string into data values used in fitness function.
 	*
 	*	@return void
 	*/
-	void ChromoTestFeatures::deserialize()
+	void ChromoTestFeatures::decode()
 	{
-		if (m_serialized.length() > 0) {
+		if (m_encoded.length() > 0) {
 			size_t curStrIndex{ 0 };
-			curStrIndex = deserializeVector(num, m_serialized, curStrIndex);
-			curStrIndex = deserializeVector(num2, m_serialized, curStrIndex);
-			curStrIndex = deserializeBoolVector(bools, m_serialized, curStrIndex);
-			curStrIndex = deserializeVector(floats, m_serialized, curStrIndex);
-			curStrIndex = deserializeVector(betterFloats, m_serialized, curStrIndex);
+			curStrIndex = decodeVector(sudoku, m_encoded, curStrIndex);
+			/*curStrIndex = decodeVector(num, m_encoded, curStrIndex);
+			curStrIndex = decodeVector(num2, m_encoded, curStrIndex);
+			curStrIndex = decodeBoolVector(bools, m_encoded, curStrIndex);
+			curStrIndex = decodeVector(floats, m_encoded, curStrIndex);
+			curStrIndex = decodeVector(betterFloats, m_encoded, curStrIndex);*/
 		} else {
-			std::cout << "ERROR: Serialized string not found!";
+			std::cout << "ERROR: Encoded string not found!";
 		}
 	}
 
 	/**
 	*	@brief  Performs custom mutations on data values
-	*	These data values should be part of the serialized string,
+	*	These data values should be part of the encoded string,
 	*	yet not used in the crossover and mutation phases.
 	*
 	*	@return void
@@ -216,6 +271,7 @@ namespace ga
 	void ChromoTestFeatures::mutateCustom()
 	{
 		// 100% chance
+		return;
 		if (m_randomGenerator() % 100 < 100) {
 			// Mutate every entry in betterFloats
 			for (size_t i{ 0 }; i < betterFloats.size(); ++i) {
@@ -231,10 +287,11 @@ namespace ga
 	*/
 	void ChromoTestFeatures::applyLimits()
 	{
-		limitVectorModulo(num, static_cast<short int>(-100), static_cast<short int>(100));
+		limitVectorModulo(sudoku, static_cast<short int>(0), static_cast<short int>(3));
+		/*limitVectorModulo(num, static_cast<short int>(-100), static_cast<short int>(100));
 		limitVectorModulo(num2, static_cast<int>(-100), static_cast<int>(100));
 		limitVectorModuloDouble(floats, static_cast<float>(-100), static_cast<float>(100));
-		limitVector(betterFloats, static_cast<float>(-100), static_cast<float>(100));
+		limitVector(betterFloats, static_cast<float>(-100), static_cast<float>(100));*/
 	}
 
 } // namespace ga
