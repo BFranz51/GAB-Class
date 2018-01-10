@@ -109,7 +109,7 @@ namespace ga
 		//	encodedSize += sizeof(bool) * bools.size();
 
 		// Reserve string memory
-		m_encoded.reserve(encodedSize + static_cast<std::size_t>(1));
+		m_encoded.reserve(encodedSize + 1);
 
 		// TODO: Add data values to encoded string, using methods from static libraries
 		// EXAMPLE:

@@ -231,7 +231,7 @@ namespace ga
 		encodedSize += sizeof(betterFloats.at(0)) * betterFloats.size();*/
 		
 		// Reserve string memory
-		m_encoded.reserve(encodedSize + static_cast<std::size_t>(1));
+		m_encoded.reserve(encodedSize + 1);
 
 		m_encoded += encodeVector(sudoku);
 		/*m_encoded += encodeVector(num);

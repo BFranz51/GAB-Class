@@ -25,7 +25,7 @@ int main()
 	
 	cout << "Genetic Algorithm Testing\n\n";
 
-	srand(static_cast<unsigned int>(time(NULL)));
+	srand(time(NULL));
 
 	//ga::runTestGenerations<ga::ChromoTestFeatures>(&rand);
 	//cin.get();
@@ -72,8 +72,6 @@ int main()
 
 	cin.get();*/
 
-	//ChromoMaxSum* test = new ChromoMaxSum(static_cast<size_t> (0), static_cast<int>(0));
-	//cout << *test;
 	ga::GeneticAlgorithm<ga::ChromoTestFeatures>* ga1 = new ga::GeneticAlgorithm<ga::ChromoTestFeatures>("Test A", 10, 0, &rand);
 	
 	ga1->setNumberToCopy(2);

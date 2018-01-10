@@ -132,7 +132,7 @@ namespace ga
 	void Chromo::mutate(std::vector<EncodedPartition>& t_encodedPartitions, const MutationLimits t_mutationLimits, const MutationSelection t_mutationSelection,
 		const std::size_t t_mutationCountMax, const std::size_t t_mutationBitWidth, const short int t_mutationChanceIn100)
 	{
-		const std::size_t mutationCount{ m_randomGenerator() % t_mutationCountMax + static_cast<std::size_t>(1) };
+		const std::size_t mutationCount{ m_randomGenerator() % t_mutationCountMax + 1 };
 		//std::cout << "\n[" << m_encoded << "] to";
 		mutateRandomBits(m_encoded, t_encodedPartitions, t_mutationLimits, t_mutationSelection, mutationCount, t_mutationBitWidth, t_mutationChanceIn100, m_randomGenerator);
 		//std::cout << "\n[" << m_encoded << "]";

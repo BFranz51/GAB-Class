@@ -274,7 +274,7 @@ namespace ga
 		// Split locations refer to the beginning of each partition
 		// The first location is always set to be 0
 		std::vector<std::size_t> splitLocations{0};
-		std::size_t size1{ static_cast<std::size_t>(1) };
+		std::size_t size1{ 1 };
 		getUniqueRandomNumbers(splitLocations, t_splits - size1, size1, t_source1.length() - size1, t_randomGenerator);
 
 		short int useStringNow{ t_randomGenerator() % 2 };

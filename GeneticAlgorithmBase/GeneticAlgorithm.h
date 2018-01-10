@@ -36,11 +36,11 @@ namespace ga
 			m_generationSize(t_generationSize),
 			m_randomGenerator(t_randomGenerator),
 			m_mutationSelection(MutationSelection::pureRandom),
-			m_mutationCountMax(static_cast<std::size_t>(0)),
-			m_mutationBitWidth(static_cast<std::size_t>(8)),
-			m_mutationChanceIn100(static_cast<short int>(100)),
-			m_numCrossoverSplits(static_cast<std::size_t>(1)),
-			m_currentGeneration(static_cast<std::size_t>(0))
+			m_mutationCountMax(0),
+			m_mutationBitWidth(8),
+			m_mutationChanceIn100(100),
+			m_numCrossoverSplits(1),
+			m_currentGeneration(0)
 		{
 			for (std::size_t i = 0; i < t_generationSize; i++) {
 				m_chromo.push_back(new C(t_initialStateId, m_randomGenerator));
@@ -640,7 +640,7 @@ namespace ga
 			m_mutationCountMax = t_mutationCountMax;
 		}
 		else {
-			m_mutationCountMax = static_cast<std::size_t>(1);
+			m_mutationCountMax = 1;
 			std::cout << "\nERROR: Mutation count max must be at least 1. Setting to default value of 1. If you want to disable mutations, please call setNumberToMutate(0);\n\n";
 		}
 	}
@@ -658,7 +658,7 @@ namespace ga
 			m_mutationBitWidth = t_mutationBitWidth;
 		}
 		else {
-			m_mutationBitWidth = static_cast<std::size_t>(1);
+			m_mutationBitWidth = 1;
 			std::cout << "\nERROR: Mutation bit width must be at least 1. Setting to default value of 1.\n\n";
 		}
 	}
@@ -757,7 +757,7 @@ namespace ga
 			m_numCrossoverSplits = t_numCrossoverSplits;
 		}
 		else {
-			m_numCrossoverSplits = static_cast<std::size_t>(1);
+			m_numCrossoverSplits = 1;
 			std::cout << "\nERROR: Number of crossover splits must be at least 1. Setting to 1.\n\n";
 		}
 	}
@@ -892,7 +892,7 @@ namespace ga
 	template <typename C>
 	std::size_t GeneticAlgorithm<C>::pickRandomVolatileChromo()
 	{
-		return static_cast<std::size_t>(m_randomGenerator() % (m_generationSize - m_numEvolveElite) + m_numEvolveElite);
+		return m_randomGenerator() % (m_generationSize - m_numEvolveElite) + m_numEvolveElite;
 	}
 
 	/**
@@ -904,10 +904,10 @@ namespace ga
 	std::size_t GeneticAlgorithm<C>::pickRandomEliteChromo()
 	{
 		if (m_numEvolveElite <= 1) {
-			return static_cast<std::size_t>(0);
+			return 0;
 		}
 		else {
-			return static_cast<std::size_t>(m_randomGenerator() % m_numEvolveElite);
+			return m_randomGenerator() % m_numEvolveElite;
 		}
 	}
 
@@ -1039,7 +1039,7 @@ namespace ga
 	void GeneticAlgorithm<C>::determineEliteChromos()
 	{
 		// Ensure that all Elite chromos are valid
-		m_numEvolveElite = static_cast<std::size_t>(0);
+		m_numEvolveElite = 0;
 		for (std::size_t i{ m_numIdealElite }; i --> 0; )
 		{
 			std::cout << " " << i << " ";
