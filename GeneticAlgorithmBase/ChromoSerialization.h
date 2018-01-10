@@ -42,7 +42,7 @@ namespace ga
 
 		T* pointerToData = &t_data;
 		char *charPointer = reinterpret_cast<char*>(pointerToData);
-		for (size_t i{ 0 }; i < sizeof(T); ++i)
+		for (std::size_t i{ 0 }; i < sizeof(T); ++i)
 		{
 			char ch = *charPointer;
 			encoded += ch;
@@ -59,11 +59,11 @@ namespace ga
 	*	@return void
 	*/
 	template <typename T>
-	static size_t decodePrimitive(T& t_data, std::string& t_encoded)
+	static std::size_t decodePrimitive(T& t_data, std::string& t_encoded)
 	{
 		// First, convert to a character array
 		char* encodedChars = new char[sizeof(T)];
-		for (size_t i{ 0 }; i < sizeof(T); ++i) {
+		for (std::size_t i{ 0 }; i < sizeof(T); ++i) {
 			encodedChars[i] = t_encoded.at(i);
 		}
 
@@ -84,14 +84,14 @@ namespace ga
 	static std::string encodeVector(std::vector<T>& t_vec)
 	{
 		std::string encodedVector = "";
-		const size_t n{ t_vec.size() };
+		const std::size_t n{ t_vec.size() };
 		encodedVector.reserve(sizeof(T) * n + 1);
 
-		for (size_t i{ 0 }; i < n; ++i)
+		for (std::size_t i{ 0 }; i < n; ++i)
 		{
 			T* pointerToData = &t_vec.at(i);
 			char *charPointer = reinterpret_cast<char*>(pointerToData);
-			for (size_t ii = 0; ii < sizeof(T); ++ii)
+			for (std::size_t ii = 0; ii < sizeof(T); ++ii)
 			{
 				char ch = *charPointer;
 				encodedVector += ch;
@@ -108,21 +108,21 @@ namespace ga
 	*	@param  t_vec specifies the vector to be modified
 	*   @param  t_encoded is the encoded value
 	*   @param  t_strFirstIndex is the location where the vector data begins
-	*	@return size_t indicating where the next data in the encoded string is location
+	*	@return std::size_t indicating where the next data in the encoded string is location
 	*/
 	template <typename T>
-	static size_t decodeVector(std::vector<T>& t_vec, const std::string& t_encoded, const size_t t_strFirstIndex)
+	static std::size_t decodeVector(std::vector<T>& t_vec, const std::string& t_encoded, const std::size_t t_strFirstIndex)
 	{
 		// Character buffer for each value
 		char* buffer = new char[sizeof(T)];
 
 		// Iterate through each item
-		const size_t n { t_vec.size() };
-		for (size_t i{ 0 }; i < n; ++i)
+		const std::size_t n { t_vec.size() };
+		for (std::size_t i{ 0 }; i < n; ++i)
 		{
 			// Items can be contained within multiple characters
 			// So we iterate through each character
-			for (size_t ii{ 0 }; ii < sizeof(T); ++ii) {
+			for (std::size_t ii{ 0 }; ii < sizeof(T); ++ii) {
 				buffer[ii] = t_encoded.at(t_strFirstIndex + i * sizeof(T) + ii);
 			}
 
@@ -146,14 +146,14 @@ namespace ga
 	*/
 	static std::string encodeBoolVector(std::vector<bool>& t_vec)
 	{
-		const size_t n{ t_vec.size() };
+		const std::size_t n{ t_vec.size() };
 		std::string encodedVector = "";
 		encodedVector.reserve(n / 8 + 2);
 		
-		size_t byteId{ 0 };
-		size_t bitId{ 0 };
+		std::size_t byteId{ 0 };
+		std::size_t bitId{ 0 };
 		char curChar{ 0x00 };
-		for (size_t i{ 0 }; i < n; ++i)
+		for (std::size_t i{ 0 }; i < n; ++i)
 		{
 			// Byte defaults to 00000000
 			// Set bit if boolean == True
@@ -183,11 +183,11 @@ namespace ga
 	*	@param  t_vec specifies the vector to be modified
 	*   @param  t_encoded is the encoded value
 	*   @param  t_strFirstIndex is the location where the vector data begins
-	*	@return size_t indicating where the next data in the encoded string is location
+	*	@return std::size_t indicating where the next data in the encoded string is location
 	*/
-	static size_t decodeBoolVector(std::vector<bool>& t_vec, std::string& t_encoded, const size_t t_strFirstIndex)
+	static std::size_t decodeBoolVector(std::vector<bool>& t_vec, std::string& t_encoded, const std::size_t t_strFirstIndex)
 	{
-		size_t bytesUsed;
+		std::size_t bytesUsed;
 		if (t_vec.size() % 8 == 0) {
 			bytesUsed = t_vec.size() / 8;
 		}
@@ -195,11 +195,11 @@ namespace ga
 			bytesUsed = t_vec.size() / 8 + 1;
 		}
 
-		size_t byteId { t_strFirstIndex };
-		size_t bitId { 0 };
-		size_t vectorSize{ t_vec.size() };
+		std::size_t byteId { t_strFirstIndex };
+		std::size_t bitId { 0 };
+		std::size_t vectorSize{ t_vec.size() };
 		char buffer { t_encoded.begin()[byteId] };
-		for (size_t i{ 0 }; i < vectorSize; ++i)
+		for (std::size_t i{ 0 }; i < vectorSize; ++i)
 		{
 			// Read bit as boolean
 			t_vec.at(i) = (buffer >> bitId) & 0x1;
@@ -232,11 +232,11 @@ namespace ga
 			return "";
 		}
 
-		const size_t n{ t_source1.length() };
+		const std::size_t n{ t_source1.length() };
 		std::string shuffledString = "";
 		shuffledString.reserve(n);
 
-		for (size_t i{ 0 }; i < n; ++i)
+		for (std::size_t i{ 0 }; i < n; ++i)
 		{
 			if (t_randomGenerator() % 2) {
 				shuffledString += t_source1.at(i);
@@ -260,7 +260,7 @@ namespace ga
 	*   @param  t_randomGenerator is the random number generator to use
 	*	@return a shuffled string
 	*/
-	static std::string nSplitEncodedData(std::string const& t_source1, std::string const& t_source2, size_t t_splits, int(*t_randomGenerator)(void))
+	static std::string nSplitEncodedData(std::string const& t_source1, std::string const& t_source2, std::size_t t_splits, int(*t_randomGenerator)(void))
 	{
 		if (t_source1.length() != t_source2.length())
 		{
@@ -273,16 +273,16 @@ namespace ga
 
 		// Split locations refer to the beginning of each partition
 		// The first location is always set to be 0
-		std::vector<size_t> splitLocations{0};
-		size_t size1{ static_cast<size_t>(1) };
+		std::vector<std::size_t> splitLocations{0};
+		std::size_t size1{ static_cast<std::size_t>(1) };
 		getUniqueRandomNumbers(splitLocations, t_splits - size1, size1, t_source1.length() - size1, t_randomGenerator);
 
 		short int useStringNow{ t_randomGenerator() % 2 };
-		size_t locationNow{ 0 };
-		const size_t n{ splitLocations.size() };
-		for (size_t i{ 0 }; i < n; ++i)
+		std::size_t locationNow{ 0 };
+		const std::size_t n{ splitLocations.size() };
+		for (std::size_t i{ 0 }; i < n; ++i)
 		{
-			size_t partitionSize { (i != n - size1) ? splitLocations.at(i + size1) - i : t_source1.length() - i };
+			std::size_t partitionSize { (i != n - size1) ? splitLocations.at(i + size1) - i : t_source1.length() - i };
 			result += useStringNow ? t_source1.substr(locationNow, partitionSize) : t_source2.substr(locationNow, partitionSize);
 
 			useStringNow = (useStringNow + 1) % 2;
@@ -293,20 +293,20 @@ namespace ga
 	}
 
 	static void mutateRandomBits(std::string& t_encoded, std::vector<EncodedPartition>& t_encodedPartitions, const MutationLimits t_mutationLimits,
-		const MutationSelection t_mutationSelection, const size_t t_mutationCount, const size_t t_mutationBitWidth,
+		const MutationSelection t_mutationSelection, const std::size_t t_mutationCount, const std::size_t t_mutationBitWidth,
 		const short int t_mutationChanceIn100, int(*t_randomGenerator)(void))
 	{
-		for (size_t nMutate{ 0 }; nMutate < t_mutationCount; ++nMutate)
+		for (std::size_t nMutate{ 0 }; nMutate < t_mutationCount; ++nMutate)
 		{
 			// Select start location and range for mutation
-			size_t byteId{ 0 };
+			std::size_t byteId{ 0 };
 			short int bitId{ 0 };
-			size_t bitsLeft{ t_mutationBitWidth };
+			std::size_t bitsLeft{ t_mutationBitWidth };
 			EncodedPartitionType partitionType{ EncodedPartitionType::normal };
 			
 			// Apply MutationSelection settings
 			if (t_mutationSelection == MutationSelection::entirePartition) {
-				size_t partitionId{ t_randomGenerator() % t_mutationLimits.partitions };
+				std::size_t partitionId{ t_randomGenerator() % t_mutationLimits.partitions };
 				
 				byteId = t_encodedPartitions.at(partitionId).location;
 				bitsLeft = t_encodedPartitions.at(partitionId).bytes * 8;
@@ -365,8 +365,8 @@ namespace ga
 
 				// Boolean partitions contain many booleans,
 				// so we select only one random bit and modify it
-				size_t selectByte{ byteId + t_randomGenerator() % (bitsLeft / 8) };
-				size_t selectBit{ t_randomGenerator() % static_cast<size_t>(8) };
+				std::size_t selectByte{ byteId + t_randomGenerator() % (bitsLeft / 8) };
+				std::size_t selectBit{ t_randomGenerator() % static_cast<std::size_t>(8) };
 
 				// Toggle random bit
 				selectByte = byteId;

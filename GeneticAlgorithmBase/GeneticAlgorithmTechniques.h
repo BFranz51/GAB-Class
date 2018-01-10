@@ -22,15 +22,15 @@ namespace ga
 	{
 	public:
 		std::string name;
-		size_t location;
-		size_t bytes;
+		std::size_t location;
+		std::size_t bytes;
 		EncodedPartitionType type;
-		size_t uniqueBits;
+		std::size_t uniqueBits;
 		EncodedPartition()
 			: location(0),
 			bytes(0)
 		{};
-		EncodedPartition(const std::string t_name, const size_t t_location, const size_t t_bytes, const EncodedPartitionType t_EncodedPartitionType, const size_t t_uniqueBits = 0)
+		EncodedPartition(const std::string t_name, const std::size_t t_location, const std::size_t t_bytes, const EncodedPartitionType t_EncodedPartitionType, const std::size_t t_uniqueBits = 0)
 			: name(t_name),
 			location(t_location),
 			bytes(t_bytes),
@@ -42,11 +42,11 @@ namespace ga
 	struct MutationLimits
 	{
 	public:
-		size_t bytes;
-		size_t partitions;
+		std::size_t bytes;
+		std::size_t partitions;
 		MutationLimits()
 			: bytes(0), partitions(0) {};
-		MutationLimits(const size_t t_bytes, const size_t t_partitions)
+		MutationLimits(const std::size_t t_bytes, const std::size_t t_partitions)
 			: bytes(t_bytes), partitions(t_partitions) {};
 	};
 
@@ -143,7 +143,7 @@ namespace ga
 	template <typename T>
 	static void limitVector(std::vector<T>& t_vec, T const t_min, T const t_max)
 	{
-		for (size_t i{ 0 }; i < t_vec.size(); ++i)
+		for (std::size_t i{ 0 }; i < t_vec.size(); ++i)
 		{
 			if (t_vec.at(i) < t_min) {
 				t_vec.at(i) = t_min;
@@ -169,7 +169,7 @@ namespace ga
 	static void limitVectorModulo(std::vector<T>& t_vec, T const t_min, T const t_max)
 	{
 		const T range{ t_max - t_min + static_cast<T>(1) };
-		for (size_t i{ 0 }; i < t_vec.size(); ++i)
+		for (std::size_t i{ 0 }; i < t_vec.size(); ++i)
 		{
 			const T relativeVal = t_vec.at(i) - t_min;
 			T newVal = (relativeVal + range) % range + t_min;
@@ -197,7 +197,7 @@ namespace ga
 	static void limitVectorModuloDouble(std::vector<T>& t_vec, double const t_min, double const t_max)
 	{
 		const double range{ t_max - t_min + static_cast<T>(1) };
-		for (size_t i{ 0 }; i < t_vec.size(); ++i)
+		for (std::size_t i{ 0 }; i < t_vec.size(); ++i)
 		{
 			const double relativeVal = static_cast<double>(t_vec.at(i)) - t_min;
 			double newVal = fmod(relativeVal + range, range) + t_min;
@@ -221,7 +221,7 @@ namespace ga
 	*	@return void
 	*/
 	template <typename T>
-	static void getUniqueRandomNumbers(std::vector<T>& t_result, size_t t_randomIndexCount, const T t_min, const T t_max, int(*t_randomGenerator)(void))
+	static void getUniqueRandomNumbers(std::vector<T>& t_result, std::size_t t_randomIndexCount, const T t_min, const T t_max, int(*t_randomGenerator)(void))
 	{
 		// Using Knuth algorithm
 		// Complexity: O(range) = O(N)
@@ -233,11 +233,11 @@ namespace ga
 		}
 		else {
 			
-			size_t numbersNeeded{ t_randomIndexCount };
+			std::size_t numbersNeeded{ t_randomIndexCount };
 
 			// Iterate through all possible numbers
-			for (size_t i{ 0 }; i < range; ++i) {
-				size_t numbersLeft = range - i;
+			for (std::size_t i{ 0 }; i < range; ++i) {
+				std::size_t numbersLeft = range - i;
 				// Probability = numbersNeeded / numbersLeft
 				if (t_randomGenerator() % numbersLeft < numbersNeeded) {
 					t_result.push_back(i + t_min);

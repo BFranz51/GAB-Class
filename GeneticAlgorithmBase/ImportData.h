@@ -122,10 +122,10 @@ namespace bif
 		*	@return Vector containing the converted items
 		*/
 		template <typename T>
-		static std::vector<T> vectorStringToVector(std::vector<std::string>& t_stringVec, const size_t t_count)
+		static std::vector<T> vectorStringToVector(std::vector<std::string>& t_stringVec, const std::size_t t_count)
 		{
 			std::vector<T> result;
-			for (size_t iter{ 0 }; iter < t_count; ++iter)
+			for (std::size_t iter{ 0 }; iter < t_count; ++iter)
 			{
 				T number;
 				std::stringstream ss(t_stringVec.at(0));
@@ -146,10 +146,10 @@ namespace bif
 		*	@param  t_count specifies the number of items to convert
 		*	@return Vector of bools containing the converted items
 		*/
-		static std::vector<bool> vectorStringToBoolVector(std::vector<std::string>& t_stringVec, const size_t t_count)
+		static std::vector<bool> vectorStringToBoolVector(std::vector<std::string>& t_stringVec, const std::size_t t_count)
 		{
 			std::vector<bool> result;
-			for (size_t iter{ 0 }; iter < t_count; ++iter)
+			for (std::size_t iter{ 0 }; iter < t_count; ++iter)
 			{
 				if (t_stringVec.at(0).compare("T")) {
 					result.push_back(true);
@@ -177,7 +177,7 @@ namespace bif
 		{
 			std::vector<std::string> parsedItems;
 
-			// Prepare positions, ensuring we use correct size_t
+			// Prepare positions, ensuring we use correct std::size_t
 			auto nextToken = decltype(t_input.size()) {0};
 			auto lastToken = decltype(nextToken) {0};
 			const auto num0 = decltype(nextToken) {0};

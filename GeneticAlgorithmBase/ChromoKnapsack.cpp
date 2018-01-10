@@ -11,7 +11,7 @@ namespace ga
 	*/
 	void ChromoKnapsack::initializeValues(const int t_initialStateId)
 	{
-		for (size_t i{ 0 }; i < 16; ++i) {
+		for (std::size_t i{ 0 }; i < 16; ++i) {
 			hasItem.push_back(false);
 		}
 	}
@@ -63,7 +63,7 @@ namespace ga
 	void ChromoKnapsack::getEncodedPartitions(std::vector<EncodedPartition>& t_indices, MutationLimits& t_mutationLimits)
 	{
 		t_indices.clear();
-		size_t location{ 0 };
+		std::size_t location{ 0 };
 		t_mutationLimits.bytes = 0;
 		t_mutationLimits.partitions = 0;
 		Chromo::addItemIndicesOfBoolVector(t_indices, t_mutationLimits, location, 16, "Bools", true);
@@ -84,7 +84,7 @@ namespace ga
 		// Each item has a certain value and weight
 		std::vector<short> weights{ 30, 40, 23, 46, 11, 6, 87, 5, 64, 97, 23, 45, 21, 21, 64, 3 };
 		std::vector<short> values{ 28, 41, 25, 45, 8, 4, 100, 1, 60, 110, 24, 46, 20, 21, 63, 2 };
-		for (size_t i{ 0 }; i < hasItem.size(); ++i) {
+		for (std::size_t i{ 0 }; i < hasItem.size(); ++i) {
 			if (hasItem.at(i)) {
 				sumValue += weights.at(i);
 				sumWeight += values.at(i);
@@ -110,11 +110,11 @@ namespace ga
 		m_encoded = "";
 
 		// Calculate string size needed
-		size_t encodedSize{ 0 };
+		std::size_t encodedSize{ 0 };
 		encodedSize += sizeof(bool) * hasItem.size();
 
 		// Reserve string memory
-		m_encoded.reserve(encodedSize + static_cast<size_t>(1));
+		m_encoded.reserve(encodedSize + static_cast<std::size_t>(1));
 
 		m_encoded += encodeBoolVector(hasItem);
 	}
@@ -127,7 +127,7 @@ namespace ga
 	void ChromoKnapsack::decode()
 	{
 		if (m_encoded.length() > 0) {
-			size_t curStrIndex{ 0 };
+			std::size_t curStrIndex{ 0 };
 			curStrIndex = decodeBoolVector(hasItem, m_encoded, curStrIndex);
 		}
 		else {

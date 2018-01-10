@@ -11,7 +11,7 @@ namespace ga
 	*/
 	void ChromoTestFeatures::initializeValues(const int t_initialStateId)
 	{
-		for (size_t i{ 0 }; i < 16; ++i)
+		for (std::size_t i{ 0 }; i < 16; ++i)
 			sudoku.push_back(1);
 		return;
 		if (t_initialStateId == 0)
@@ -118,7 +118,7 @@ namespace ga
 	void ChromoTestFeatures::getEncodedPartitions(std::vector<EncodedPartition>& t_indices, MutationLimits& t_mutationLimits)
 	{
 		t_indices.clear();
-		size_t location{ 0 };
+		std::size_t location{ 0 };
 		t_mutationLimits.bytes = 0;
 		t_mutationLimits.partitions = 0;
 		Chromo::addItemIndicesOfVector(t_indices, t_mutationLimits, location, sizeof(short int), 16, "Sudoku", true);
@@ -140,11 +140,11 @@ namespace ga
 		int penalty{ 0 };
 
 		// Test lines
-		for (size_t i{ 0 }; i < 4; ++i)
+		for (std::size_t i{ 0 }; i < 4; ++i)
 		{
 			std::vector<bool> hasNumH = { false, false, false, false };
 			std::vector<bool> hasNumV = { false, false, false, false };
-			for (size_t j{ 0 }; j < 4; ++j)
+			for (std::size_t j{ 0 }; j < 4; ++j)
 			{
 				short int val;
 
@@ -163,15 +163,15 @@ namespace ga
 		}
 
 		// Test clusters
-		for (size_t i{ 0 }; i < 2; ++i)
+		for (std::size_t i{ 0 }; i < 2; ++i)
 		{
-			for (size_t j{ 0 }; j < 2; ++j)
+			for (std::size_t j{ 0 }; j < 2; ++j)
 			{
 				// Test inside cluster
 				std::vector<bool> hasNum = { false, false, false, false };
-				for (size_t x{ 0 }; x < 2; ++x)
+				for (std::size_t x{ 0 }; x < 2; ++x)
 				{
-					for (size_t y{ 0 }; y < 2; ++y)
+					for (std::size_t y{ 0 }; y < 2; ++y)
 					{
 						short int val = sudoku.at(y * 4 + x + i * 2 + j * 8);
 						if (hasNum.at(val))
@@ -186,8 +186,8 @@ namespace ga
 		return;
 
 		// Only count unique numbers
-		std::unordered_map<size_t, int> usedNumbers;
-		for (size_t i = 0; i < num.size(); ++i) {
+		std::unordered_map<std::size_t, int> usedNumbers;
+		for (std::size_t i = 0; i < num.size(); ++i) {
 			if (usedNumbers.find(num.at(i)) == usedNumbers.end()) {
 				total += num.at(i);
 				usedNumbers[num.at(i)] = 1;
@@ -195,12 +195,12 @@ namespace ga
 		}
 
 		// Count all integers from num2
-		for (size_t i = 0; i < num2.size(); ++i) {
+		for (std::size_t i = 0; i < num2.size(); ++i) {
 			total += num2.at(i);
 		}
 
 		// Booleans should be in pattern True-False-True-False... etc
-		for (size_t i = 0; i < bools.size(); ++i) {
+		for (std::size_t i = 0; i < bools.size(); ++i) {
 			if (i % 2 == 0) {
 				total += (bools.at(i) ? 5 : 0);
 			}
@@ -222,7 +222,7 @@ namespace ga
 		m_encoded = "";
 
 		// Calculate string size needed
-		size_t encodedSize{ 0 };
+		std::size_t encodedSize{ 0 };
 		encodedSize += sizeof(sudoku.at(0)) * sudoku.size();
 		/*encodedSize += sizeof(num.at(0)) * num.size();
 		encodedSize += sizeof(num2.at(0)) * num2.size();
@@ -231,7 +231,7 @@ namespace ga
 		encodedSize += sizeof(betterFloats.at(0)) * betterFloats.size();*/
 		
 		// Reserve string memory
-		m_encoded.reserve(encodedSize + static_cast<size_t>(1));
+		m_encoded.reserve(encodedSize + static_cast<std::size_t>(1));
 
 		m_encoded += encodeVector(sudoku);
 		/*m_encoded += encodeVector(num);
@@ -249,7 +249,7 @@ namespace ga
 	void ChromoTestFeatures::decode()
 	{
 		if (m_encoded.length() > 0) {
-			size_t curStrIndex{ 0 };
+			std::size_t curStrIndex{ 0 };
 			curStrIndex = decodeVector(sudoku, m_encoded, curStrIndex);
 			/*curStrIndex = decodeVector(num, m_encoded, curStrIndex);
 			curStrIndex = decodeVector(num2, m_encoded, curStrIndex);
@@ -274,7 +274,7 @@ namespace ga
 		return;
 		if (m_randomGenerator() % 100 < 100) {
 			// Mutate every entry in betterFloats
-			for (size_t i{ 0 }; i < betterFloats.size(); ++i) {
+			for (std::size_t i{ 0 }; i < betterFloats.size(); ++i) {
 				betterFloats.at(i) += randomRangeDouble(-5.0, 5.0, m_randomGenerator);
 			}
 		}

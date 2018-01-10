@@ -11,8 +11,8 @@ namespace ga
 	*/
 	void Chromo::writeToFileAsBinary(std::ofstream& t_oStream)
 	{
-		size_t characters = m_encoded.size();
-		t_oStream.write((char*) &characters, sizeof(size_t));
+		std::size_t characters = m_encoded.size();
+		t_oStream.write((char*) &characters, sizeof(std::size_t));
 		t_oStream.write(&m_encoded[0], characters);
 	}
 
@@ -27,9 +27,9 @@ namespace ga
 	{
 		// Read encoded size first
 		char* readMemSizeT;
-		readMemSizeT = new char[sizeof(size_t)];
-		t_iStream.read(readMemSizeT, sizeof(size_t));
-		size_t characters = *((size_t*)readMemSizeT);
+		readMemSizeT = new char[sizeof(std::size_t)];
+		t_iStream.read(readMemSizeT, sizeof(std::size_t));
+		std::size_t characters = *((std::size_t*)readMemSizeT);
 		
 		// Now read string
 		m_encoded.resize(characters);
@@ -48,7 +48,7 @@ namespace ga
 	*	@param  t_oStream specifies the file stream to write to
 	*	@return void
 	*/
-	void Chromo::writeToFileAsCSV(const size_t t_id, std::ofstream& t_oStream)
+	void Chromo::writeToFileAsCSV(const std::size_t t_id, std::ofstream& t_oStream)
 	{
 		// Write CSV values that base class knows
 		t_oStream << std::to_string(t_id) << "," << getScore();
@@ -76,7 +76,7 @@ namespace ga
 		std::vector<std::string> chromoValues = bif::Import::parseString(line, ",", bif::Import::CleanTokenBy::none);
 
 		// Get ID (not used) and score
-		size_t id;
+		std::size_t id;
 		double score;
 		stringToNumber(chromoValues.at(0), id);
 		stringToNumber(chromoValues.at(1), score);
@@ -130,9 +130,9 @@ namespace ga
 	*	@return void
 	*/
 	void Chromo::mutate(std::vector<EncodedPartition>& t_encodedPartitions, const MutationLimits t_mutationLimits, const MutationSelection t_mutationSelection,
-		const size_t t_mutationCountMax, const size_t t_mutationBitWidth, const short int t_mutationChanceIn100)
+		const std::size_t t_mutationCountMax, const std::size_t t_mutationBitWidth, const short int t_mutationChanceIn100)
 	{
-		const size_t mutationCount{ m_randomGenerator() % t_mutationCountMax + static_cast<size_t>(1) };
+		const std::size_t mutationCount{ m_randomGenerator() % t_mutationCountMax + static_cast<std::size_t>(1) };
 		//std::cout << "\n[" << m_encoded << "] to";
 		mutateRandomBits(m_encoded, t_encodedPartitions, t_mutationLimits, t_mutationSelection, mutationCount, t_mutationBitWidth, t_mutationChanceIn100, m_randomGenerator);
 		//std::cout << "\n[" << m_encoded << "]";
@@ -152,11 +152,11 @@ namespace ga
 	*   @param  t_mutatable is a bool representing whether to allow this partition to be mutated
 	*	@return void
 	*/
-	void Chromo::addItemIndicesOfVector(std::vector<EncodedPartition>& t_encodedPartitions, MutationLimits& t_mutationLimits, size_t& t_nextLocation, const size_t t_itemSize, const size_t t_vectorSize, const std::string t_vectorName, const bool t_mutatable)
+	void Chromo::addItemIndicesOfVector(std::vector<EncodedPartition>& t_encodedPartitions, MutationLimits& t_mutationLimits, std::size_t& t_nextLocation, const std::size_t t_itemSize, const std::size_t t_vectorSize, const std::string t_vectorName, const bool t_mutatable)
 	{
 		std::string partitionName;
 		partitionName.reserve(t_vectorName.length() + 5);
-		for (size_t i{ 0 }; i < t_vectorSize; ++i) {
+		for (std::size_t i{ 0 }; i < t_vectorSize; ++i) {
 			partitionName = t_vectorName + "_" + std::to_string(i);
 			t_encodedPartitions.push_back(EncodedPartition(partitionName, t_nextLocation, t_itemSize, EncodedPartitionType::normal));
 			t_nextLocation += t_itemSize;
@@ -186,13 +186,13 @@ namespace ga
 	*   @param  t_mutatable is a bool representing whether to allow this partition to be mutated
 	*	@return void
 	*/
-	void Chromo::addItemIndicesOfBoolVector(std::vector<EncodedPartition>& t_encodedPartitions, MutationLimits& t_mutationLimits, size_t& t_nextLocation, const size_t t_vectorSize, const std::string t_vectorName, const bool t_mutatable)
+	void Chromo::addItemIndicesOfBoolVector(std::vector<EncodedPartition>& t_encodedPartitions, MutationLimits& t_mutationLimits, std::size_t& t_nextLocation, const std::size_t t_vectorSize, const std::string t_vectorName, const bool t_mutatable)
 	{
 		// Bools are treated as bits
 		// So this is stored as a single partition, marked as BoolPartition
 		
 		// Round up for bytes used
-		size_t bytesUsed{ 0 };
+		std::size_t bytesUsed{ 0 };
 		if (t_vectorSize % 8 == 0) {
 			bytesUsed = t_vectorSize / 8;
 		}

@@ -31,18 +31,18 @@ namespace ga
 	class GeneticAlgorithm
 	{
 	public:
-		explicit GeneticAlgorithm(const std::string t_name, const size_t t_generationSize, const int t_initialStateId, int (*t_randomGenerator)(void))
+		explicit GeneticAlgorithm(const std::string t_name, const std::size_t t_generationSize, const int t_initialStateId, int (*t_randomGenerator)(void))
 			: m_name(t_name),
 			m_generationSize(t_generationSize),
 			m_randomGenerator(t_randomGenerator),
 			m_mutationSelection(MutationSelection::pureRandom),
-			m_mutationCountMax(static_cast<size_t>(0)),
-			m_mutationBitWidth(static_cast<size_t>(8)),
+			m_mutationCountMax(static_cast<std::size_t>(0)),
+			m_mutationBitWidth(static_cast<std::size_t>(8)),
 			m_mutationChanceIn100(static_cast<short int>(100)),
-			m_numCrossoverSplits(static_cast<size_t>(1)),
-			m_currentGeneration(static_cast<size_t>(0))
+			m_numCrossoverSplits(static_cast<std::size_t>(1)),
+			m_currentGeneration(static_cast<std::size_t>(0))
 		{
-			for (size_t i = 0; i < t_generationSize; i++) {
+			for (std::size_t i = 0; i < t_generationSize; i++) {
 				m_chromo.push_back(new C(t_initialStateId, m_randomGenerator));
 			}
 			C::getEncodedPartitions(m_encodedPartitions, m_mutationLimits);
@@ -69,15 +69,15 @@ namespace ga
 		
 		// Algorithm settings
 		void setMutationSelection(const MutationSelection);
-		void setMutationCountMax(const size_t);
-		void setMutationCountFunction(size_t(*)(const size_t, const double, int(*)(void)));
-		void setMutationBitWidth(const size_t);
+		void setMutationCountMax(const std::size_t);
+		void setMutationCountFunction(std::size_t(*)(const std::size_t, const double, int(*)(void)));
+		void setMutationBitWidth(const std::size_t);
 		void setMutationChanceIn100(const short int);
-		void setNumberToCopy(const size_t);
-		void setNumberToShuffle(const size_t);
-		void setNumberToCrossover(const size_t);
-		void setNumberToMutate(const size_t);
-		void setNumberOfCrossoverSplits(const size_t);
+		void setNumberToCopy(const std::size_t);
+		void setNumberToShuffle(const std::size_t);
+		void setNumberToCrossover(const std::size_t);
+		void setNumberToMutate(const std::size_t);
+		void setNumberOfCrossoverSplits(const std::size_t);
 
 		unsigned long int getGeneration() const;
 
@@ -92,7 +92,7 @@ namespace ga
 			// Output header info
 			output << "GA " << self.m_name << "\nGeneration #" << self.getGeneration() << "\n{\n";
 			// Output chromos
-			size_t id{ 0 };
+			std::size_t id{ 0 };
 			for (typename std::vector<C*>::const_iterator it { std::begin(self.m_chromo) }; it != std::end(self.m_chromo); ++it)
 			{
 				output << "ID [" << id << "] = ";
@@ -111,40 +111,40 @@ namespace ga
 		std::vector<C*> m_competition;
 
 		// Number of chromosomes
-		size_t m_generationSize;
+		std::size_t m_generationSize;
 
 		// Controls bit selection during mutations
 		MutationSelection m_mutationSelection;
 		// When a Chromo is selected for mutation,
 		// create mutations in range [1, m_mutationCountMax]
-		size_t m_mutationCountMax;
+		std::size_t m_mutationCountMax;
 		// Each mutation modifies a block of bits of this width
-		size_t m_mutationBitWidth;
+		std::size_t m_mutationBitWidth;
 		// Within mutation blocks, this controls the
 		// chance of any bit being toggled
 		short int m_mutationChanceIn100;
 
 		// Variables which control the number of
 		// Chromos to run different crossover processes on
-		size_t m_numIdealElite{ 1 };
-		size_t m_numEvolveElite{ 0 };
-		size_t m_numEvolveCopy{ 0 };
-		size_t m_numEvolveCopyExtra{ 0 };
-		size_t m_numEvolveShuffle{ 0 };
-		size_t m_numEvolveCrossover{ 0 };
+		std::size_t m_numIdealElite{ 1 };
+		std::size_t m_numEvolveElite{ 0 };
+		std::size_t m_numEvolveCopy{ 0 };
+		std::size_t m_numEvolveCopyExtra{ 0 };
+		std::size_t m_numEvolveShuffle{ 0 };
+		std::size_t m_numEvolveCrossover{ 0 };
 		
 		// In a crossover, split the encoded data
 		// this many times
-		size_t m_numCrossoverSplits{ 1 };
+		std::size_t m_numCrossoverSplits{ 1 };
 
 		// Number of Chromos to mutate
-		size_t m_numEvolveMutate{ 0 };
+		std::size_t m_numEvolveMutate{ 0 };
 
 		// Indices recalculated each generation
-		size_t m_firstIdEvolveCopy;
-		size_t m_firstIdEvolveShuffle;
-		size_t m_firstIdEvolveCrossover;
-		size_t m_firstIdEvolveMutate;
+		std::size_t m_firstIdEvolveCopy;
+		std::size_t m_firstIdEvolveShuffle;
+		std::size_t m_firstIdEvolveCrossover;
+		std::size_t m_firstIdEvolveMutate;
 
 		unsigned long int m_currentGeneration{ 0 };
 
@@ -182,9 +182,9 @@ namespace ga
 		void doCustomMutations();
 
 		// Utility functions
-		size_t pickRandomVolatileChromo();
-		size_t pickRandomEliteChromo();
-		void pickTwoRandomEliteChromos(size_t&, size_t&);
+		std::size_t pickRandomVolatileChromo();
+		std::size_t pickRandomEliteChromo();
+		void pickTwoRandomEliteChromos(std::size_t&, std::size_t&);
 
 		// Information about encoded string partitions
 		std::vector<EncodedPartition> m_encodedPartitions;
@@ -265,14 +265,14 @@ namespace ga
 			int tempInt;
 
 			// Write GA settings
-			oStream.write((char*)&m_generationSize, sizeof(size_t));
-			oStream.write((char*)&m_mutationCountMax, sizeof(size_t));
-			oStream.write((char*)&m_mutationBitWidth, sizeof(size_t));
-			oStream.write((char*)&m_mutationChanceIn100, sizeof(size_t));
-			oStream.write((char*)&m_numEvolveCopy, sizeof(size_t));
-			oStream.write((char*)&m_numEvolveShuffle, sizeof(size_t));
-			oStream.write((char*)&m_numEvolveCrossover, sizeof(size_t));
-			oStream.write((char*)&m_numEvolveMutate, sizeof(size_t));
+			oStream.write((char*)&m_generationSize, sizeof(std::size_t));
+			oStream.write((char*)&m_mutationCountMax, sizeof(std::size_t));
+			oStream.write((char*)&m_mutationBitWidth, sizeof(std::size_t));
+			oStream.write((char*)&m_mutationChanceIn100, sizeof(std::size_t));
+			oStream.write((char*)&m_numEvolveCopy, sizeof(std::size_t));
+			oStream.write((char*)&m_numEvolveShuffle, sizeof(std::size_t));
+			oStream.write((char*)&m_numEvolveCrossover, sizeof(std::size_t));
+			oStream.write((char*)&m_numEvolveMutate, sizeof(std::size_t));
 			oStream.write((char*)&m_currentGeneration, sizeof(unsigned long int));
 
 			tempInt = static_cast<int>(m_mutationSelection);
@@ -308,12 +308,12 @@ namespace ga
 		{
 			// Temporary vars
 			int tempInt;
-			size_t newGenerationSize;
+			std::size_t newGenerationSize;
 
 			char * readMemSizeT;
 			char * readMemInt;
 			char * readMemULongInt;
-			memSize = sizeof(size_t);
+			memSize = sizeof(std::size_t);
 			readMemSizeT = new char[memSize];
 			readMemInt = new char[sizeof(int)];
 			readMemULongInt = new char[sizeof(unsigned long int)];
@@ -321,28 +321,28 @@ namespace ga
 
 			iStream.seekg(0, ios::beg);
 			iStream.read(readMemSizeT, memSize);
-			newGenerationSize = *((size_t*) readMemSizeT);
+			newGenerationSize = *((std::size_t*) readMemSizeT);
 
 			iStream.read(readMemSizeT, memSize);
-			m_mutationCountMax = *((size_t*)readMemSizeT);
+			m_mutationCountMax = *((std::size_t*)readMemSizeT);
 
 			iStream.read(readMemSizeT, memSize);
-			m_mutationBitWidth = *((size_t*)readMemSizeT);
+			m_mutationBitWidth = *((std::size_t*)readMemSizeT);
 
 			iStream.read(readMemSizeT, memSize);
-			m_mutationChanceIn100 = *((size_t*)readMemSizeT);
+			m_mutationChanceIn100 = *((std::size_t*)readMemSizeT);
 
 			iStream.read(readMemSizeT, memSize);
-			m_numEvolveCopy = *((size_t*)readMemSizeT);
+			m_numEvolveCopy = *((std::size_t*)readMemSizeT);
 
 			iStream.read(readMemSizeT, memSize);
-			m_numEvolveShuffle = *((size_t*)readMemSizeT);
+			m_numEvolveShuffle = *((std::size_t*)readMemSizeT);
 
 			iStream.read(readMemSizeT, memSize);
-			m_numEvolveCrossover = *((size_t*)readMemSizeT);
+			m_numEvolveCrossover = *((std::size_t*)readMemSizeT);
 
 			iStream.read(readMemSizeT, memSize);
-			m_numEvolveMutate = *((size_t*)readMemSizeT);
+			m_numEvolveMutate = *((std::size_t*)readMemSizeT);
 
 			iStream.read(readMemULongInt, sizeof(unsigned long int));
 			m_currentGeneration = *((unsigned long int*)readMemULongInt);
@@ -413,10 +413,10 @@ namespace ga
 
 			// Write header for chromos
 			oStream << "ChromoID,Score";
-			for (size_t i{ 0 }; i < m_encodedPartitions.size(); ++i) {
+			for (std::size_t i{ 0 }; i < m_encodedPartitions.size(); ++i) {
 				if (m_encodedPartitions.at(i).type == EncodedPartitionType::eachBitUnique) {
 					// Boolean vectors require columns for each bit
-					for (size_t bit{ 0 }; bit < m_encodedPartitions.at(i).uniqueBits; ++bit) {
+					for (std::size_t bit{ 0 }; bit < m_encodedPartitions.at(i).uniqueBits; ++bit) {
 						oStream << "," << m_encodedPartitions.at(i).name << bit;
 					}
 				}
@@ -427,7 +427,7 @@ namespace ga
 			oStream << "\n";
 
 			// Write each Chromo
-			size_t id{ 0 };
+			std::size_t id{ 0 };
 			for (auto it{ std::begin(m_chromo) }; it != std::end(m_chromo); ++it)
 			{
 				(*it)->writeToFileAsCSV(id++, oStream);
@@ -458,7 +458,7 @@ namespace ga
 			// Temporary vars
 			int tempInt;
 			std::string line;
-			size_t newGenerationSize;
+			std::size_t newGenerationSize;
 
 			// Read GA header line
 			std::getline(iStream, line);
@@ -634,13 +634,13 @@ namespace ga
 	*	@return void
 	*/
 	template <typename C>
-	void GeneticAlgorithm<C>::setMutationCountMax(const size_t t_mutationCountMax)
+	void GeneticAlgorithm<C>::setMutationCountMax(const std::size_t t_mutationCountMax)
 	{
 		if (t_mutationCountMax >= 1) {
 			m_mutationCountMax = t_mutationCountMax;
 		}
 		else {
-			m_mutationCountMax = static_cast<size_t>(1);
+			m_mutationCountMax = static_cast<std::size_t>(1);
 			std::cout << "\nERROR: Mutation count max must be at least 1. Setting to default value of 1. If you want to disable mutations, please call setNumberToMutate(0);\n\n";
 		}
 	}
@@ -652,13 +652,13 @@ namespace ga
 	*	@return void
 	*/
 	template <typename C>
-	void GeneticAlgorithm<C>::setMutationBitWidth(const size_t t_mutationBitWidth)
+	void GeneticAlgorithm<C>::setMutationBitWidth(const std::size_t t_mutationBitWidth)
 	{
 		if (t_mutationBitWidth >= 1) {
 			m_mutationBitWidth = t_mutationBitWidth;
 		}
 		else {
-			m_mutationBitWidth = static_cast<size_t>(1);
+			m_mutationBitWidth = static_cast<std::size_t>(1);
 			std::cout << "\nERROR: Mutation bit width must be at least 1. Setting to default value of 1.\n\n";
 		}
 	}
@@ -697,7 +697,7 @@ namespace ga
 	*	@return void
 	*/
 	template <typename C>
-	void GeneticAlgorithm<C>::setNumberToCopy(const size_t t_numCopy)
+	void GeneticAlgorithm<C>::setNumberToCopy(const std::size_t t_numCopy)
 	{
 		m_numEvolveCopy = t_numCopy;
 	}
@@ -711,7 +711,7 @@ namespace ga
 	*	@return void
 	*/
 	template <typename C>
-	void GeneticAlgorithm<C>::setNumberToShuffle(const size_t t_numShuffle)
+	void GeneticAlgorithm<C>::setNumberToShuffle(const std::size_t t_numShuffle)
 	{
 		m_numEvolveShuffle = t_numShuffle;
 	}
@@ -725,7 +725,7 @@ namespace ga
 	*	@return void
 	*/
 	template <typename C>
-	void GeneticAlgorithm<C>::setNumberToCrossover(const size_t t_numCrossover)
+	void GeneticAlgorithm<C>::setNumberToCrossover(const std::size_t t_numCrossover)
 	{
 		m_numEvolveCrossover = t_numCrossover;
 	}
@@ -739,7 +739,7 @@ namespace ga
 	*	@return void
 	*/
 	template <typename C>
-	void GeneticAlgorithm<C>::setNumberToMutate(const size_t t_numMutate)
+	void GeneticAlgorithm<C>::setNumberToMutate(const std::size_t t_numMutate)
 	{
 		m_numEvolveMutate = t_numMutate;
 	}
@@ -751,13 +751,13 @@ namespace ga
 	*	@return void
 	*/
 	template <typename C>
-	void GeneticAlgorithm<C>::setNumberOfCrossoverSplits(const size_t t_numCrossoverSplits)
+	void GeneticAlgorithm<C>::setNumberOfCrossoverSplits(const std::size_t t_numCrossoverSplits)
 	{
 		if (t_numCrossoverSplits >= 1) {
 			m_numCrossoverSplits = t_numCrossoverSplits;
 		}
 		else {
-			m_numCrossoverSplits = static_cast<size_t>(1);
+			m_numCrossoverSplits = static_cast<std::size_t>(1);
 			std::cout << "\nERROR: Number of crossover splits must be at least 1. Setting to 1.\n\n";
 		}
 	}
@@ -824,12 +824,12 @@ namespace ga
 	{
 		// Calculate last ID, based on the user-specified number to copy
 		// Chromos which would normally be Elite yet have invalid scores are also copied
-		const size_t lastIdToCopy{ m_firstIdEvolveCopy + m_numEvolveCopy + m_numEvolveCopyExtra };
+		const std::size_t lastIdToCopy{ m_firstIdEvolveCopy + m_numEvolveCopy + m_numEvolveCopyExtra };
 
-		for (size_t i = m_firstIdEvolveCopy; i < lastIdToCopy; ++i)
+		for (std::size_t i = m_firstIdEvolveCopy; i < lastIdToCopy; ++i)
 		{
 			// One parent is randomly chosen from best chromos
-			size_t parentId{ pickRandomEliteChromo() };
+			std::size_t parentId{ pickRandomEliteChromo() };
 			C* parent = m_chromo.at(parentId);
 
 			// Replace unworthy chromo
@@ -849,12 +849,12 @@ namespace ga
 	{
 		if (m_numEvolveShuffle > 0)
 		{
-			for (size_t i = m_firstIdEvolveShuffle; i < m_firstIdEvolveShuffle + m_numEvolveShuffle; ++i)
+			for (std::size_t i = m_firstIdEvolveShuffle; i < m_firstIdEvolveShuffle + m_numEvolveShuffle; ++i)
 			{
 				// Two parents are randomly chosen from best chromos
-				size_t parentId1{ 0 };
-				size_t parentId2{ 0 };
-				getTwoUniqueRandomNumbers(parentId1, parentId2, static_cast<size_t>(0), m_numEvolveElite, m_randomGenerator );
+				std::size_t parentId1{ 0 };
+				std::size_t parentId2{ 0 };
+				getTwoUniqueRandomNumbers(parentId1, parentId2, static_cast<std::size_t>(0), m_numEvolveElite, m_randomGenerator );
 
 				// Replace unworthy chromo
 				m_chromo.at(i)->shuffleFromParents(*m_chromo.at(parentId1), *m_chromo.at(parentId2));
@@ -872,11 +872,11 @@ namespace ga
 	template <typename C>
 	void GeneticAlgorithm<C>::doCrossovers()
 	{
-		for (size_t i{ m_firstIdEvolveCrossover }; i < m_firstIdEvolveCrossover + m_numEvolveCrossover; ++i)
+		for (std::size_t i{ m_firstIdEvolveCrossover }; i < m_firstIdEvolveCrossover + m_numEvolveCrossover; ++i)
 		{
 			// Two parents are randomly chosen from best chromos
-			size_t parentId1{ 0 };
-			size_t parentId2{ 0 };
+			std::size_t parentId1{ 0 };
+			std::size_t parentId2{ 0 };
 			pickTwoRandomEliteChromos(parentId1, parentId2);
 
 			// Replace unworthy chromo
@@ -890,9 +890,9 @@ namespace ga
 	*	@return Index of random Volatile Chromo
 	*/
 	template <typename C>
-	size_t GeneticAlgorithm<C>::pickRandomVolatileChromo()
+	std::size_t GeneticAlgorithm<C>::pickRandomVolatileChromo()
 	{
-		return static_cast<size_t>(m_randomGenerator() % (m_generationSize - m_numEvolveElite) + m_numEvolveElite);
+		return static_cast<std::size_t>(m_randomGenerator() % (m_generationSize - m_numEvolveElite) + m_numEvolveElite);
 	}
 
 	/**
@@ -901,13 +901,13 @@ namespace ga
 	*	@return Index of random Elite Chromo
 	*/
 	template <typename C>
-	size_t GeneticAlgorithm<C>::pickRandomEliteChromo()
+	std::size_t GeneticAlgorithm<C>::pickRandomEliteChromo()
 	{
 		if (m_numEvolveElite <= 1) {
-			return static_cast<size_t>(0);
+			return static_cast<std::size_t>(0);
 		}
 		else {
-			return static_cast<size_t>(m_randomGenerator() % m_numEvolveElite);
+			return static_cast<std::size_t>(m_randomGenerator() % m_numEvolveElite);
 		}
 	}
 
@@ -919,7 +919,7 @@ namespace ga
 	*	@return void
 	*/
 	template <typename C>
-	void GeneticAlgorithm<C>::pickTwoRandomEliteChromos(size_t& t_EliteId1, size_t& t_EliteId2)
+	void GeneticAlgorithm<C>::pickTwoRandomEliteChromos(std::size_t& t_EliteId1, std::size_t& t_EliteId2)
 	{
 		if (m_numEvolveElite <= 1) {
 			t_EliteId1 = 0;
@@ -943,12 +943,12 @@ namespace ga
 	template <typename C>
 	void GeneticAlgorithm<C>::doMutations()
 	{
-		std::vector<size_t> mutationList;
+		std::vector<std::size_t> mutationList;
 		if (m_numEvolveMutate < m_generationSize - m_numEvolveElite) {
 			// Pick random Volatile Chromos to mutate,
 			// ensuring that none are picked twice
 			getUniqueRandomNumbers(mutationList, m_numEvolveMutate, m_numEvolveElite, m_generationSize, m_randomGenerator);
-			for (size_t i{ 0 }; i < m_numEvolveMutate; ++i)
+			for (std::size_t i{ 0 }; i < m_numEvolveMutate; ++i)
 			{
 				m_chromo.at(mutationList.at(i))->mutate(m_encodedPartitions, m_mutationLimits, m_mutationSelection,
 					m_mutationCountMax, m_mutationBitWidth, m_mutationChanceIn100);
@@ -957,7 +957,7 @@ namespace ga
 		else {
 			// If there are not enough Volatile Chromos to choose from,
 			// instead mutate all Volatile
-			for (size_t i{ m_firstIdEvolveMutate }; i< m_generationSize; ++i)
+			for (std::size_t i{ m_firstIdEvolveMutate }; i< m_generationSize; ++i)
 			{
 				m_chromo.at(i)->mutate(m_encodedPartitions, m_mutationLimits, m_mutationSelection,
 					m_mutationCountMax, m_mutationBitWidth, m_mutationChanceIn100);
@@ -980,7 +980,7 @@ namespace ga
 	{
 		// Call mutateCustom() for all Volatile chromos
 		// Mutation chance is handled by mutateCustom()
-		for (size_t i{ m_firstIdEvolveMutate }; i< m_generationSize; ++i)
+		for (std::size_t i{ m_firstIdEvolveMutate }; i< m_generationSize; ++i)
 		{
 			m_chromo.at(i)->mutateCustom();
 		}
@@ -1039,8 +1039,8 @@ namespace ga
 	void GeneticAlgorithm<C>::determineEliteChromos()
 	{
 		// Ensure that all Elite chromos are valid
-		m_numEvolveElite = static_cast<size_t>(0);
-		for (size_t i{ m_numIdealElite }; i --> 0; )
+		m_numEvolveElite = static_cast<std::size_t>(0);
+		for (std::size_t i{ m_numIdealElite }; i --> 0; )
 		{
 			std::cout << " " << i << " ";
 			if (m_chromo.at(i)->getScore() > 0)
@@ -1079,7 +1079,7 @@ namespace ga
 	template <typename C>
 	void GeneticAlgorithm<C>::encodeChromos()
 	{
-		for (size_t i{ 0 }; i < m_generationSize; ++i)
+		for (std::size_t i{ 0 }; i < m_generationSize; ++i)
 		{
 			m_chromo.at(i)->encode();
 		}
@@ -1093,7 +1093,7 @@ namespace ga
 	template <typename C>
 	void GeneticAlgorithm<C>::decodeChromos()
 	{
-		for (size_t i{ m_numEvolveElite }; i < m_generationSize; ++i)
+		for (std::size_t i{ m_numEvolveElite }; i < m_generationSize; ++i)
 		{
 			m_chromo.at(i)->decode();
 			m_chromo.at(i)->applyLimits();

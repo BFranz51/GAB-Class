@@ -41,8 +41,8 @@ namespace ga
 		template <typename C>
 		void shuffleFromParents(const C&, const C&);
 		template <typename C>
-		void crossoverFromParents(const C&, const C&, const size_t);
-		void mutate(std::vector<EncodedPartition>&, const MutationLimits, const MutationSelection, const size_t, const size_t, const short int);
+		void crossoverFromParents(const C&, const C&, const std::size_t);
+		void mutate(std::vector<EncodedPartition>&, const MutationLimits, const MutationSelection, const std::size_t, const std::size_t, const short int);
 		virtual void mutateCustom() = 0;
 
 		// Pure virtual functions, required to be overridden by derived classes
@@ -54,7 +54,7 @@ namespace ga
 
 		void writeToFileAsBinary(std::ofstream&);
 		void readFromFileAsBinary(std::ifstream&);
-		void writeToFileAsCSV(const size_t, std::ofstream&);
+		void writeToFileAsCSV(const std::size_t, std::ofstream&);
 		void readFromFileAsCSV(std::ifstream&);
 
 		friend std::ostream &operator<<(std::ostream& output, const Chromo& self) {
@@ -62,8 +62,8 @@ namespace ga
 			return output;
 		}
 
-		static void addItemIndicesOfVector(std::vector<EncodedPartition>&, MutationLimits&, size_t&, const size_t, const size_t, const std::string, const bool);
-		static void addItemIndicesOfBoolVector(std::vector<EncodedPartition>&, MutationLimits&, size_t&, const size_t, const std::string, const bool);
+		static void addItemIndicesOfVector(std::vector<EncodedPartition>&, MutationLimits&, std::size_t&, const std::size_t, const std::size_t, const std::string, const bool);
+		static void addItemIndicesOfBoolVector(std::vector<EncodedPartition>&, MutationLimits&, std::size_t&, const std::size_t, const std::string, const bool);
 
 	protected:
 		void setScore(double);
@@ -115,7 +115,7 @@ namespace ga
 	*	@return void
 	*/
 	template <typename C>
-	void Chromo::crossoverFromParents(const C& t_parent1, const C& t_parent2, const size_t t_numSplits)
+	void Chromo::crossoverFromParents(const C& t_parent1, const C& t_parent2, const std::size_t t_numSplits)
 	{
 		m_encoded = nSplitEncodedData(t_parent1.m_encoded, t_parent2.m_encoded, t_numSplits, m_randomGenerator);
 	}

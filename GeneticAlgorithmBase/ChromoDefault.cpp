@@ -71,7 +71,7 @@ namespace ga
 	void ChromoDefault::getEncodedPartitions(std::vector<EncodedPartition>& t_indices, MutationLimits& t_mutationLimits)
 	{
 		t_indices.clear();
-		size_t location{ 0 };
+		std::size_t location{ 0 };
 		t_mutationLimits.bytes = 0;
 		t_mutationLimits.partitions = 0;
 		// TODO: Fill in t_indices with all the encoded values which
@@ -102,14 +102,14 @@ namespace ga
 		m_encoded = "";
 
 		// Calculate string size needed
-		size_t encodedSize{ 0 };
+		std::size_t encodedSize{ 0 };
 		// TODO: Calculate total string size needed
 		// EXAMPLE:
 		//	encodedSize += sizeof(ints.at(0)) * ints.size();
 		//	encodedSize += sizeof(bool) * bools.size();
 
 		// Reserve string memory
-		m_encoded.reserve(encodedSize + static_cast<size_t>(1));
+		m_encoded.reserve(encodedSize + static_cast<std::size_t>(1));
 
 		// TODO: Add data values to encoded string, using methods from static libraries
 		// EXAMPLE:
@@ -125,7 +125,7 @@ namespace ga
 	void ChromoDefault::decode()
 	{
 		if (m_encoded.length() > 0) {
-			size_t curStrIndex{ 0 };
+			std::size_t curStrIndex{ 0 };
 			// TODO: Use static methods to pull data values from the encoded string
 			// EXAMPLE:
 			//	curStrIndex = decodeVector(ints, m_encoded, curStrIndex);
