@@ -854,7 +854,7 @@ namespace ga
 				// Two parents are randomly chosen from best chromos
 				std::size_t parentId1{ 0 };
 				std::size_t parentId2{ 0 };
-				getTwoUniqueRandomNumbers(parentId1, parentId2, static_cast<std::size_t>(0), m_numEvolveElite, m_randomGenerator );
+				pickTwoRandomEliteChromos(parentId1, parentId2);
 
 				// Replace unworthy chromo
 				m_chromo.at(i)->shuffleFromParents(*m_chromo.at(parentId1), *m_chromo.at(parentId2));
@@ -922,14 +922,21 @@ namespace ga
 	void GeneticAlgorithm<C>::pickTwoRandomEliteChromos(std::size_t& t_EliteId1, std::size_t& t_EliteId2)
 	{
 		if (m_numEvolveElite <= 1) {
+			// Not enough Elite Chromos to choose
 			t_EliteId1 = 0;
 			t_EliteId2 = 0;
 		}
 		else {
+			// 1st number can be all possible numbers
 			t_EliteId1 = m_randomGenerator() % m_numEvolveElite;
-			t_EliteId2 = t_EliteId1;
-			while (t_EliteId1 == t_EliteId2) {
-				t_EliteId2 = m_randomGenerator() % m_numEvolveElite;
+
+			// 2nd number has (range - 1) possibilities
+			// Increment if result >= t_result1
+			// This removes t_result1 from possible results,
+			// while keeping other possibilities at an equal probability
+			t_EliteId2 = m_randomGenerator() % (m_numEvolveElite - 1);
+			if (t_EliteId2 >= t_EliteId1) {
+				++t_EliteId2;
 			}
 		}
 	}
