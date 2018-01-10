@@ -126,8 +126,8 @@ namespace ga
 
 		// Variables which control the number of
 		// Chromos to run different crossover processes on
-		size_t m_numIdealSafe{ 1 };
-		size_t m_numEvolveSafe{ 0 };
+		size_t m_numIdealElite{ 1 };
+		size_t m_numEvolveElite{ 0 };
 		size_t m_numEvolveCopy{ 0 };
 		size_t m_numEvolveCopyExtra{ 0 };
 		size_t m_numEvolveShuffle{ 0 };
@@ -164,11 +164,11 @@ namespace ga
 		// ie. At least 2 Chromos not in crossover phase
 		bool areBoundsValid();
 		// Use GA settings to calculate the number
-		// of Chromos to mark "safe"
-		void determineIdealSafeChromos();
+		// of Chromos to mark Elite
+		void determineIdealEliteChromos();
 		// Check fitness scores to ensure that invalid Chromos
-		// are always marked "unsafe"
-		void determineSafeChromos();
+		// are always marked Volatile rather than Elite
+		void determineEliteChromos();
 		// Calculate indices for crossover + mutation processes
 		void determineEvolutionRanges();
 
@@ -182,9 +182,9 @@ namespace ga
 		void doCustomMutations();
 
 		// Utility functions
-		size_t pickRandomUnsafeChromo();
-		size_t pickRandomSafeChromo();
-		void pickTwoRandomSafeChromos(size_t&, size_t&);
+		size_t pickRandomVolatileChromo();
+		size_t pickRandomEliteChromo();
+		void pickTwoRandomEliteChromos(size_t&, size_t&);
 
 		// Information about encoded string partitions
 		std::vector<EncodedPartition> m_encodedPartitions;
@@ -520,16 +520,16 @@ namespace ga
 	*	@brief  Calls selection methods and ensures that there are enough valid Chromos for the rest of the generation.
 	*	Runs fitness function on the Chromos to get their fitness scores
 	*	and sorts them by those scores in order to mark the best scoring Chromos
-	*	as "safe".
+	*	as Elite.
 	*	
-	*	"Safe" Chromos are not modified during the crossover and mutation phases,
+	*	Elite Chromos are not modified during the crossover and mutation phases,
 	*	and are used as sources for other Chromos.
 	*	
 	*	Since we only want valid Chromos to be used as sources, this method also
-	*	calls determineIdealSafeChromos(), which detects invalid "safe" Chromos
-	*	and marks them as "unsafe".
+	*	calls determineIdealEliteChromos(), which detects invalid Elite Chromos
+	*	and marks them as Volatile.
 	*
-	*	@return true if there are enough "safe" Chromos, false otherwise
+	*	@return true if there are enough Elite Chromos, false otherwise
 	*/
 	template <typename C>
 	bool GeneticAlgorithm<C>::runSelectionPhase(const bool showDebugMessages)
@@ -538,12 +538,12 @@ namespace ga
 		sortChromoByScore();
 
 		// Calculate indices for crossover and mutation processes
-		determineIdealSafeChromos();
-		determineSafeChromos();
+		determineIdealEliteChromos();
+		determineEliteChromos();
 		determineEvolutionRanges();
 
-		// Ensure there are at least 2 "safe" Chromos
-		if (m_numEvolveSafe < 2) {
+		// Ensure there are at least 2 Elite Chromos
+		if (m_numEvolveElite < 2) {
 			std::cout << "\nERROR: Number of valid Chromos is less than 2!\n";
 			std::cout << "Review initial conditions to insure they are valid according to the fitness function.\n";
 			return false;
@@ -555,12 +555,12 @@ namespace ga
 
 	/**
 	*	@brief  Encodes Chromo data and calls all crossover methods.
-	*	Crossover methods are run on individual Chromos marked as "unsafe"
+	*	Crossover methods are run on individual Chromos marked as Volatile
 	*	due to having either invalid or low fitness scores
 	*	Methods used:
-	*		COPIES - Choose a random "safe" Chromo and copy data from it.
-	*		SHUFFLES - Choose 2 random "safe" Chromos and randomly copy data from them.
-	*		CROSSOVERS - Choose 2 random "safe" Chromos and uUse n-Split crossover
+	*		COPIES - Choose a random Elite Chromo and copy data from it.
+	*		SHUFFLES - Choose 2 random Elite Chromos and randomly copy data from them.
+	*		CROSSOVERS - Choose 2 random Elite Chromos and uUse n-Split crossover
 	*	method to copy data from them.
 	*
 	*	@return void
@@ -764,7 +764,7 @@ namespace ga
 
 	/**
 	*	@brief  Utility function that ensures GA settings for crossovers and mutations are within the bounds of the generation size.
-	*	Tests for minimum generation size, having at least 2 "safe" Chromos during
+	*	Tests for minimum generation size, having at least 2 Elite Chromos during
 	*	the crossover phase, and having at least 2 Chromos not used in mutation phase.
 	*
 	*	@return true if there were no unresolvable issues, false otherwise
@@ -773,7 +773,7 @@ namespace ga
 	bool GeneticAlgorithm<C>::areBoundsValid()
 	{
 		// Generation must have at least 3 Chromos
-		// Due to needing 2 "safe" Chromos and at least 1 for the crossover and mutation phases
+		// Due to needing 2 Elite Chromos and at least 1 for the crossover and mutation phases
 		if (m_generationSize < 3)
 		{
 			std::cout << "\nERROR: Generation size must be at least 3!\n\n";
@@ -815,7 +815,7 @@ namespace ga
 	}
 
 	/**
-	*	@brief  A crossover method that replaces data in "unsafe" Chromos with direct copies of encoded data in "safe" Chromos.
+	*	@brief  A crossover method that replaces data in Volatile Chromos with direct copies of encoded data in Elite Chromos.
 	*
 	*	@return void
 	*/
@@ -823,13 +823,13 @@ namespace ga
 	void GeneticAlgorithm<C>::doCopies()
 	{
 		// Calculate last ID, based on the user-specified number to copy
-		// Chromos which would normally be "safe" yet have invalid scores are also copied
+		// Chromos which would normally be Elite yet have invalid scores are also copied
 		const size_t lastIdToCopy{ m_firstIdEvolveCopy + m_numEvolveCopy + m_numEvolveCopyExtra };
 
 		for (size_t i = m_firstIdEvolveCopy; i < lastIdToCopy; ++i)
 		{
 			// One parent is randomly chosen from best chromos
-			size_t parentId{ pickRandomSafeChromo() };
+			size_t parentId{ pickRandomEliteChromo() };
 			C* parent = m_chromo.at(parentId);
 
 			// Replace unworthy chromo
@@ -838,7 +838,7 @@ namespace ga
 	}
 
 	/**
-	*	@brief  A crossover method that replaces data in "unsafe" Chromos with shuffled data from two random "safe" Chromos.
+	*	@brief  A crossover method that replaces data in Volatile Chromos with shuffled data from two random Elite Chromos.
 	*	Each byte in the encoded data is chosen randomly from the
 	*	corresponding bytes of the parent Chromos.
 	*
@@ -854,7 +854,7 @@ namespace ga
 				// Two parents are randomly chosen from best chromos
 				size_t parentId1{ 0 };
 				size_t parentId2{ 0 };
-				getTwoUniqueRandomNumbers(parentId1, parentId2, static_cast<size_t>(0), m_numEvolveSafe, m_randomGenerator );
+				getTwoUniqueRandomNumbers(parentId1, parentId2, static_cast<size_t>(0), m_numEvolveElite, m_randomGenerator );
 
 				// Replace unworthy chromo
 				m_chromo.at(i)->shuffleFromParents(*m_chromo.at(parentId1), *m_chromo.at(parentId2));
@@ -864,7 +864,7 @@ namespace ga
 	}
 
 	/**
-	*	@brief  A crossover method that replaces data in "unsafe" Chromos with data crossed over from two random "safe" Chromos.
+	*	@brief  A crossover method that replaces data in Volatile Chromos with data crossed over from two random Elite Chromos.
 	*	The default crossover used is n-Split, found in Chromo.h.
 	*
 	*	@return void
@@ -877,7 +877,7 @@ namespace ga
 			// Two parents are randomly chosen from best chromos
 			size_t parentId1{ 0 };
 			size_t parentId2{ 0 };
-			pickTwoRandomSafeChromos(parentId1, parentId2);
+			pickTwoRandomEliteChromos(parentId1, parentId2);
 
 			// Replace unworthy chromo
 			m_chromo.at(i)->crossoverFromParents(*m_chromo.at(parentId1), *m_chromo.at(parentId2), m_numCrossoverSplits);
@@ -885,51 +885,51 @@ namespace ga
 	}
 
 	/**
-	*	@brief  Finds a random "unsafe" Chromo
+	*	@brief  Finds a random Volatile Chromo
 	*
-	*	@return Index of random "unsafe" Chromo
+	*	@return Index of random Volatile Chromo
 	*/
 	template <typename C>
-	size_t GeneticAlgorithm<C>::pickRandomUnsafeChromo()
+	size_t GeneticAlgorithm<C>::pickRandomVolatileChromo()
 	{
-		return static_cast<size_t>(m_randomGenerator() % (m_generationSize - m_numEvolveSafe) + m_numEvolveSafe);
+		return static_cast<size_t>(m_randomGenerator() % (m_generationSize - m_numEvolveElite) + m_numEvolveElite);
 	}
 
 	/**
-	*	@brief  Finds a random "safe" Chromo
+	*	@brief  Finds a random Elite Chromo
 	*
-	*	@return Index of random "safe" Chromo
+	*	@return Index of random Elite Chromo
 	*/
 	template <typename C>
-	size_t GeneticAlgorithm<C>::pickRandomSafeChromo()
+	size_t GeneticAlgorithm<C>::pickRandomEliteChromo()
 	{
-		if (m_numEvolveSafe <= 1) {
+		if (m_numEvolveElite <= 1) {
 			return static_cast<size_t>(0);
 		}
 		else {
-			return static_cast<size_t>(m_randomGenerator() % m_numEvolveSafe);
+			return static_cast<size_t>(m_randomGenerator() % m_numEvolveElite);
 		}
 	}
 
 	/**
-	*	@brief  Finds two random "safe" Chromos. They will not have the same index.
+	*	@brief  Finds two random Elite Chromos. They will not have the same index.
 	*
-	*	@param  t_safeId1 will be set to the index of a random "safe" Chromo
-	*	@param  t_safeId2 will be set to the index of a random "safe" Chromo
+	*	@param  t_EliteId1 will be set to the index of a random Elite Chromo
+	*	@param  t_EliteId2 will be set to the index of a random Elite Chromo
 	*	@return void
 	*/
 	template <typename C>
-	void GeneticAlgorithm<C>::pickTwoRandomSafeChromos(size_t& t_safeId1, size_t& t_safeId2)
+	void GeneticAlgorithm<C>::pickTwoRandomEliteChromos(size_t& t_EliteId1, size_t& t_EliteId2)
 	{
-		if (m_numEvolveSafe <= 1) {
-			t_safeId1 = 0;
-			t_safeId2 = 0;
+		if (m_numEvolveElite <= 1) {
+			t_EliteId1 = 0;
+			t_EliteId2 = 0;
 		}
 		else {
-			t_safeId1 = m_randomGenerator() % m_numEvolveSafe;
-			t_safeId2 = t_safeId1;
-			while (t_safeId1 == t_safeId2) {
-				t_safeId2 = m_randomGenerator() % m_numEvolveSafe;
+			t_EliteId1 = m_randomGenerator() % m_numEvolveElite;
+			t_EliteId2 = t_EliteId1;
+			while (t_EliteId1 == t_EliteId2) {
+				t_EliteId2 = m_randomGenerator() % m_numEvolveElite;
 			}
 		}
 	}
@@ -944,10 +944,10 @@ namespace ga
 	void GeneticAlgorithm<C>::doMutations()
 	{
 		std::vector<size_t> mutationList;
-		if (m_numEvolveMutate < m_generationSize - m_numEvolveSafe) {
-			// Pick random unsafe Chromos to mutate,
+		if (m_numEvolveMutate < m_generationSize - m_numEvolveElite) {
+			// Pick random Volatile Chromos to mutate,
 			// ensuring that none are picked twice
-			getUniqueRandomNumbers(mutationList, m_numEvolveMutate, m_numEvolveSafe, m_generationSize, m_randomGenerator);
+			getUniqueRandomNumbers(mutationList, m_numEvolveMutate, m_numEvolveElite, m_generationSize, m_randomGenerator);
 			for (size_t i{ 0 }; i < m_numEvolveMutate; ++i)
 			{
 				m_chromo.at(mutationList.at(i))->mutate(m_encodedPartitions, m_mutationLimits, m_mutationSelection,
@@ -955,8 +955,8 @@ namespace ga
 			}
 		}
 		else {
-			// If there are not enough unsafe Chromos to choose from,
-			// instead mutate all unsafe
+			// If there are not enough Volatile Chromos to choose from,
+			// instead mutate all Volatile
 			for (size_t i{ m_firstIdEvolveMutate }; i< m_generationSize; ++i)
 			{
 				m_chromo.at(i)->mutate(m_encodedPartitions, m_mutationLimits, m_mutationSelection,
@@ -978,7 +978,7 @@ namespace ga
 	template <typename C>
 	void GeneticAlgorithm<C>::doCustomMutations()
 	{
-		// Call mutateCustom() for all unsafe chromos
+		// Call mutateCustom() for all Volatile chromos
 		// Mutation chance is handled by mutateCustom()
 		for (size_t i{ m_firstIdEvolveMutate }; i< m_generationSize; ++i)
 		{
@@ -1012,63 +1012,63 @@ namespace ga
 		// Use only a partial sort because
 		// low scoring Chromos will be overwritten
 		// and their order does not matter.
-		std::partial_sort(m_chromo.begin(), m_chromo.begin() + m_numIdealSafe, m_chromo.end(), [](C* x, C* y) { return x->getScore() > y->getScore(); });
+		std::partial_sort(m_chromo.begin(), m_chromo.begin() + m_numIdealElite, m_chromo.end(), [](C* x, C* y) { return x->getScore() > y->getScore(); });
 	}
 
 	/**
-	*	@brief  Utility function that calculates the number of "best" Chromos to be marked as "safe"
-	*	"Safe" Chromos are omitted from the crossover and mutation phases.
+	*	@brief  Utility function that calculates the number of "best" Chromos to be marked as Elite
+	*	Elite Chromos are omitted from the crossover and mutation phases.
 	*
 	*	@return void
 	*/
 	template <typename C>
-	void GeneticAlgorithm<C>::determineIdealSafeChromos()
+	void GeneticAlgorithm<C>::determineIdealEliteChromos()
 	{
 		// Bounds have already been checked in areBoundsValid(),
 		// so this should return a positive number
-		m_numIdealSafe = m_generationSize - m_numEvolveCopy - m_numEvolveShuffle - m_numEvolveCrossover;
+		m_numIdealElite = m_generationSize - m_numEvolveCopy - m_numEvolveShuffle - m_numEvolveCrossover;
 	}
 
 	/**
-	*	@brief  Iterates through top-scoring Chromos, ensuring only valid Chromos are kept "safe".
-	*	Invalid Chromos are no longer "safe", and will be copied from "safe" Chromos.
+	*	@brief  Iterates through top-scoring Chromos, ensuring only valid Chromos are kept Elite.
+	*	Invalid Chromos are no longer Elite, and will be copied from Elite Chromos.
 	*
 	*	@return void
 	*/
 	template <typename C>
-	void GeneticAlgorithm<C>::determineSafeChromos()
+	void GeneticAlgorithm<C>::determineEliteChromos()
 	{
-		// Ensure that all safe chromos are valid
-		m_numEvolveSafe = static_cast<size_t>(0);
-		for (size_t i{ m_numIdealSafe }; i --> 0; )
+		// Ensure that all Elite chromos are valid
+		m_numEvolveElite = static_cast<size_t>(0);
+		for (size_t i{ m_numIdealElite }; i --> 0; )
 		{
 			std::cout << " " << i << " ";
 			if (m_chromo.at(i)->getScore() > 0)
 			{
-				m_numEvolveSafe = i + 1;
+				m_numEvolveElite = i + 1;
 				break;
 			}
 		}
 		
-		// Copy chromos determined as unsafe
-		m_numEvolveCopyExtra = m_numIdealSafe - m_numEvolveSafe;
+		// Copy chromos determined as Volatile
+		m_numEvolveCopyExtra = m_numIdealElite - m_numEvolveElite;
 	}
 
 	/**
-	*	@brief  Sets indices for the crossover and mutation methods using GA settings and the result of determineSafeChromos().
+	*	@brief  Sets indices for the crossover and mutation methods using GA settings and the result of determineEliteChromos().
 	*
 	*	@return void
 	*/
 	template <typename C>
 	void GeneticAlgorithm<C>::determineEvolutionRanges()
 	{
-		// Unsafe chromos are split up into different crossover groups
-		m_firstIdEvolveCopy = m_numEvolveSafe;
+		// Volatile chromos are split up into different crossover groups
+		m_firstIdEvolveCopy = m_numEvolveElite;
 		m_firstIdEvolveShuffle = m_firstIdEvolveCopy + m_numEvolveCopy + m_numEvolveCopyExtra;
 		m_firstIdEvolveCrossover = m_firstIdEvolveShuffle + m_numEvolveShuffle;
 
-		// Mutation is allowed on every chromo that is unsafe
-		m_firstIdEvolveMutate = m_numEvolveSafe;
+		// Mutation is allowed on every chromo that is Volatile
+		m_firstIdEvolveMutate = m_numEvolveElite;
 	}
 
 	/**
@@ -1093,7 +1093,7 @@ namespace ga
 	template <typename C>
 	void GeneticAlgorithm<C>::decodeChromos()
 	{
-		for (size_t i{ m_numEvolveSafe }; i < m_generationSize; ++i)
+		for (size_t i{ m_numEvolveElite }; i < m_generationSize; ++i)
 		{
 			m_chromo.at(i)->decode();
 			m_chromo.at(i)->applyLimits();
